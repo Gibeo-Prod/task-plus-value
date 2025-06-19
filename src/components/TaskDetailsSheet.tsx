@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Task } from "@/types/tasks"
 
@@ -102,6 +103,10 @@ export function TaskDetailsSheet({
   const handleDeleteTask = () => {
     onDeleteTask(task.id)
     onClose()
+    toast({
+      title: "Tarefa excluída",
+      description: "A tarefa foi removida com sucesso",
+    })
   }
 
   const handleAddToMyDay = () => {
@@ -525,16 +530,36 @@ export function TaskDetailsSheet({
               </div>
             </div>
 
-            {/* Botão de excluir */}
+            {/* Botão de excluir com confirmação */}
             <div className="pt-4">
-              <Button
-                variant="ghost"
-                onClick={handleDeleteTask}
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4 mr-3" />
-                <span>Excluir tarefa</span>
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-3" />
+                    <span>Excluir tarefa</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza de que deseja excluir esta tarefa? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteTask}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </SheetContent>
