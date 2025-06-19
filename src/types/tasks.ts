@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string
   text: string
@@ -36,9 +37,24 @@ export interface TaskReminder {
   isSent: boolean
 }
 
+export interface Client {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  company?: string
+  projects: number
+}
+
 export interface Project {
   id: string
   name: string
+  clientId: string
   value: number
+  description?: string
+  startDate?: string
+  dueDate?: string
+  status: string
+  priority: 'low' | 'medium' | 'high'
   tasks: number
 }

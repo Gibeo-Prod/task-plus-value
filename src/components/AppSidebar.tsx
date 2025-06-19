@@ -5,7 +5,7 @@ import {
   Calendar, 
   Star, 
   CheckSquare, 
-  Briefcase,
+  Users,
   Plus,
   DollarSign,
   List
@@ -25,24 +25,26 @@ import {
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
-interface Project {
+interface Client {
   id: string
   name: string
-  value: number
-  tasks: number
+  email?: string
+  company?: string
+  projects: number
 }
 
 interface AppSidebarProps {
   selectedView: string
   onViewChange: (view: string) => void
-  projects: Project[]
-  onAddProject: (name: string, value: number) => void
+  clients: Client[]
+  onAddClient: (name: string, email: string, company?: string) => void
 }
 
-export function AppSidebar({ selectedView, onViewChange, projects, onAddProject }: AppSidebarProps) {
-  const [isAddingProject, setIsAddingProject] = useState(false)
-  const [newProjectName, setNewProjectName] = useState("")
-  const [newProjectValue, setNewProjectValue] = useState("")
+export function AppSidebar({ selectedView, onViewChange, clients, onAddClient }: AppSidebarProps) {
+  const [isAddingClient, setIsAddingClient] = useState(false)
+  const [newClientName, setNewClientName] = useState("")
+  const [newClientEmail, setNewClientEmail] = useState("")
+  const [newClientCompany, setNewClientCompany] = useState("")
   const { toast } = useToast()
 
   const defaultViews = [
@@ -72,25 +74,16 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
     },
   ]
 
-  const handleAddProject = () => {
-    if (newProjectName.trim() && newProjectValue.trim()) {
-      const value = parseFloat(newProjectValue)
-      if (isNaN(value) || value < 0) {
-        toast({
-          title: "Erro",
-          description: "Por favor, insira um valor válido para o projeto.",
-          variant: "destructive",
-        })
-        return
-      }
-      
-      onAddProject(newProjectName.trim(), value)
-      setNewProjectName("")
-      setNewProjectValue("")
-      setIsAddingProject(false)
+  const handleAddClient = () => {
+    if (newClientName.trim() && newClientEmail.trim()) {
+      onAddClient(newClientName.trim(), newClientEmail.trim(), newClientCompany.trim() || undefined)
+      setNewClientName("")
+      setNewClientEmail("")
+      setNewClientCompany("")
+      setIsAddingClient(false)
       toast({
-        title: "Projeto criado",
-        description: `Projeto "${newProjectName.trim()}" criado com sucesso!`,
+        title: "Cliente criado",
+        description: `Cliente "${newClientName.trim()}" criado com sucesso!`,
       })
     }
   }
@@ -138,11 +131,11 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
 
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
-            <span>Projetos</span>
+            <span>Clientes</span>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsAddingProject(true)}
+              onClick={() => setIsAddingClient(true)}
               className="h-6 w-6 p-0 hover:bg-ms-blue-light"
             >
               <Plus className="w-4 h-4" />
@@ -150,46 +143,65 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {isAddingProject && (
+              {isAddingClient && (
                 <SidebarMenuItem>
                   <div className="space-y-2 p-2">
                     <input
                       type="text"
-                      placeholder="Nome do projeto"
-                      value={newProjectName}
-                      onChange={(e) => setNewProjectName(e.target.value)}
+                      placeholder="Nome do cliente"
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
                       className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          handleAddProject()
+                          handleAddClient()
                         } else if (e.key === 'Escape') {
-                          setIsAddingProject(false)
-                          setNewProjectName("")
-                          setNewProjectValue("")
+                          setIsAddingClient(false)
+                          setNewClientName("")
+                          setNewClientEmail("")
+                          setNewClientCompany("")
                         }
                       }}
                       autoFocus
                     />
                     <input
-                      type="number"
-                      placeholder="Valor (R$)"
-                      value={newProjectValue}
-                      onChange={(e) => setNewProjectValue(e.target.value)}
+                      type="email"
+                      placeholder="Email do cliente"
+                      value={newClientEmail}
+                      onChange={(e) => setNewClientEmail(e.target.value)}
                       className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          handleAddProject()
+                          handleAddClient()
                         } else if (e.key === 'Escape') {
-                          setIsAddingProject(false)
-                          setNewProjectName("")
-                          setNewProjectValue("")
+                          setIsAddingClient(false)
+                          setNewClientName("")
+                          setNewClientEmail("")
+                          setNewClientCompany("")
+                        }
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Empresa (opcional)"
+                      value={newClientCompany}
+                      onChange={(e) => setNewClientCompany(e.target.value)}
+                      className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddClient()
+                        } else if (e.key === 'Escape') {
+                          setIsAddingClient(false)
+                          setNewClientName("")
+                          setNewClientEmail("")
+                          setNewClientCompany("")
                         }
                       }}
                     />
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        onClick={handleAddProject}
+                        onClick={handleAddClient}
                         className="flex-1 bg-ms-blue hover:bg-ms-blue-dark text-white"
                       >
                         Adicionar
@@ -198,9 +210,10 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setIsAddingProject(false)
-                          setNewProjectName("")
-                          setNewProjectValue("")
+                          setIsAddingClient(false)
+                          setNewClientName("")
+                          setNewClientEmail("")
+                          setNewClientCompany("")
                         }}
                         className="flex-1"
                       >
@@ -211,28 +224,29 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
                 </SidebarMenuItem>
               )}
               
-              {projects.map((project) => (
-                <SidebarMenuItem key={project.id}>
+              {clients.map((client) => (
+                <SidebarMenuItem key={client.id}>
                   <SidebarMenuButton 
                     asChild
-                    isActive={selectedView === project.id}
+                    isActive={selectedView === client.id}
                     className="w-full justify-start hover:bg-ms-blue-light transition-colors"
                   >
                     <button
-                      onClick={() => onViewChange(project.id)}
+                      onClick={() => onViewChange(client.id)}
                       className="flex items-center gap-3 p-2 text-left w-full"
                     >
-                      <Briefcase className="w-5 h-5" />
+                      <Users className="w-5 h-5" />
                       <div className="flex-1 min-w-0">
-                        <div className="truncate">{project.name}</div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <DollarSign className="w-3 h-3" />
-                          <span>R$ {project.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                        </div>
+                        <div className="truncate">{client.name}</div>
+                        {client.company && (
+                          <div className="text-xs text-muted-foreground truncate">
+                            {client.company}
+                          </div>
+                        )}
                       </div>
-                      {project.tasks > 0 && (
+                      {client.projects > 0 && (
                         <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                          {project.tasks}
+                          {client.projects}
                         </span>
                       )}
                     </button>
@@ -247,11 +261,11 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
       <SidebarFooter className="p-4 space-y-2">
         <Button
           variant="ghost"
-          onClick={() => setIsAddingProject(true)}
+          onClick={() => setIsAddingClient(true)}
           className="w-full justify-start hover:bg-ms-blue-light"
         >
           <List className="w-4 h-4 mr-3" />
-          <span>Adicionar Nova Lista</span>
+          <span>Adicionar Novo Cliente</span>
         </Button>
         <div className="text-xs text-muted-foreground">
           Agend - Organize suas tarefas

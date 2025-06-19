@@ -1,5 +1,7 @@
 
 import { useState } from "react"
+import { ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { TaskItem } from "./TaskItem"
 import { TaskInput } from "./TaskInput"
 import { TaskDetailsSheet } from "./TaskDetailsSheet"
@@ -26,6 +28,8 @@ interface TaskListProps {
   tags: TaskTag[]
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
+  showBackButton?: boolean
+  onBack?: () => void
 }
 
 export function TaskList({
@@ -41,6 +45,8 @@ export function TaskList({
   tags,
   onAddCategory,
   onAddTag,
+  showBackButton = false,
+  onBack,
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -81,7 +87,20 @@ export function TaskList({
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        <div className="flex items-center gap-4">
+          {showBackButton && onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="hover:bg-ms-blue-light"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
+          )}
+          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        </div>
         {subtitle && (
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         )}
