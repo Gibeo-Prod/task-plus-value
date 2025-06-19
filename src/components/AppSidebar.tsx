@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { 
   Home, 
@@ -7,7 +6,8 @@ import {
   CheckSquare, 
   Briefcase,
   Plus,
-  DollarSign
+  DollarSign,
+  List
 } from "lucide-react"
 import {
   Sidebar,
@@ -101,7 +101,7 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
           <div className="w-8 h-8 bg-ms-blue rounded-lg flex items-center justify-center">
             <CheckSquare className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-lg ms-blue">To Do</span>
+          <span className="font-semibold text-lg ms-blue">Agend</span>
         </div>
       </SidebarHeader>
       
@@ -243,9 +243,17 @@ export function AppSidebar({ selectedView, onViewChange, projects, onAddProject 
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-2">
+        <Button
+          variant="ghost"
+          onClick={() => setIsAddingProject(true)}
+          className="w-full justify-start hover:bg-ms-blue-light"
+        >
+          <List className="w-4 h-4 mr-3" />
+          <span>Adicionar Nova Lista</span>
+        </Button>
         <div className="text-xs text-muted-foreground">
-          Microsoft To-Do Clone
+          Agend - Organize suas tarefas
         </div>
       </SidebarFooter>
     </Sidebar>

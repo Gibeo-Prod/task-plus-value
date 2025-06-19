@@ -264,7 +264,7 @@ const Index = () => {
             <div className="flex items-center gap-4 p-4">
               <SidebarTrigger className="hover:bg-ms-blue-light" />
               <h2 className="text-sm font-medium text-muted-foreground">
-                Microsoft To-Do Clone
+                Agend
               </h2>
             </div>
           </div>
