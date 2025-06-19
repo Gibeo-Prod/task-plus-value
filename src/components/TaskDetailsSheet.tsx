@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { X, Plus, Sun, Clock, Calendar, Repeat, User, Paperclip, FileText, Trash2 } from "lucide-react"
+import { X, Plus, Sun, Clock, Calendar, User, Paperclip, FileText, Trash2 } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,6 +22,12 @@ interface Subtask {
   completed: boolean
 }
 
+interface AttachedFile {
+  id: string
+  name: string
+  size: number
+}
+
 export function TaskDetailsSheet({ 
   task, 
   isOpen, 
@@ -36,6 +42,7 @@ export function TaskDetailsSheet({
   const [showReminderPicker, setShowReminderPicker] = useState(false)
   const [showAssignPicker, setShowAssignPicker] = useState(false)
   const [assignTo, setAssignTo] = useState("")
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const { toast } = useToast()
 
   if (!task) return null
@@ -159,16 +166,38 @@ export function TaskDetailsSheet({
     input.onchange = (e) => {
       const files = (e.target as HTMLInputElement).files
       if (files && files.length > 0) {
-        const fileNames = Array.from(files).map(file => file.name)
+        const newFiles: AttachedFile[] = Array.from(files).map(file => ({
+          id: Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          size: file.size
+        }))
+        
+        setAttachedFiles(prev => [...prev, ...newFiles])
+        
+        const fileNames = newFiles.map(file => file.name)
         toast({
           title: "Arquivos anexados",
           description: `${fileNames.length} arquivo(s) anexado(s): ${fileNames.join(', ')}`,
         })
-        // Aqui você poderia implementar o upload real dos arquivos
-        // Por enquanto, vamos apenas mostrar o toast de confirmação
       }
     }
     input.click()
+  }
+
+  const handleRemoveFile = (fileId: string) => {
+    setAttachedFiles(prev => prev.filter(file => file.id !== fileId))
+    toast({
+      title: "Arquivo removido",
+      description: "Arquivo foi removido da tarefa",
+    })
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   const isInMyDay = task.dueDate === new Date().toISOString().split('T')[0]
@@ -380,6 +409,34 @@ export function TaskDetailsSheet({
                   </span>
                 )}
               </Button>
+            )}
+
+            {/* Lista de arquivos anexados */}
+            {attachedFiles.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-muted-foreground px-3">
+                  Arquivos anexados
+                </div>
+                {attachedFiles.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Paperclip className="w-4 h-4 text-muted-foreground" />
+                      <div>
+                        <div className="text-sm font-medium">{file.name}</div>
+                        <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveFile(file.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             )}
 
             <Button 
