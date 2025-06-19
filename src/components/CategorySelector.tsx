@@ -47,7 +47,7 @@ export function CategorySelector({
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={selectedCategory || ""} onValueChange={(value) => onSelectCategory(value || undefined)}>
+      <Select value={selectedCategory || "none"} onValueChange={(value) => onSelectCategory(value === "none" ? undefined : value)}>
         <SelectTrigger className="w-48">
           <SelectValue placeholder="Selecionar categoria">
             {selectedCategoryData && (
@@ -63,7 +63,7 @@ export function CategorySelector({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">
+          <SelectItem value="none">
             <div className="flex items-center gap-2">
               <Folder className="w-4 h-4" />
               <span>Sem categoria</span>
