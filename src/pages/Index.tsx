@@ -112,6 +112,12 @@ const Index = () => {
     })
   }
 
+  const updateTask = (taskId: string, updates: Partial<Task>) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, ...updates } : task
+    ))
+  }
+
   const toggleTask = (id: string) => {
     setTasks(prev => prev.map(task => {
       if (task.id === id) {
@@ -271,6 +277,7 @@ const Index = () => {
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onToggleImportant={toggleImportant}
+            onUpdateTask={updateTask}
             categories={categories}
             tags={tags}
             onAddCategory={addCategory}

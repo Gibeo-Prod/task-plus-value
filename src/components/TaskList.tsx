@@ -1,6 +1,8 @@
 
+import { useState } from "react"
 import { TaskItem } from "./TaskItem"
 import { TaskInput } from "./TaskInput"
+import { TaskDetailsSheet } from "./TaskDetailsSheet"
 import { Task, TaskCategory, TaskTag } from "@/types/tasks"
 
 interface TaskListProps {
@@ -19,6 +21,7 @@ interface TaskListProps {
   onToggleTask: (id: string) => void
   onDeleteTask: (id: string) => void
   onToggleImportant: (id: string) => void
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void
   categories: TaskCategory[]
   tags: TaskTag[]
   onAddCategory: (name: string, color: string, icon: string) => void
@@ -33,11 +36,15 @@ export function TaskList({
   onToggleTask,
   onDeleteTask,
   onToggleImportant,
+  onUpdateTask,
   categories,
   tags,
   onAddCategory,
   onAddTag,
 }: TaskListProps) {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+
   const incompleteTasks = tasks.filter(task => !task.completed)
   const completedTasks = tasks.filter(task => task.completed)
 
@@ -60,6 +67,16 @@ export function TaskList({
     
     return 0
   })
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task)
+    setIsSheetOpen(true)
+  }
+
+  const handleCloseSheet = () => {
+    setIsSheetOpen(false)
+    setSelectedTask(null)
+  }
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -94,6 +111,7 @@ export function TaskList({
                 onToggle={onToggleTask}
                 onDelete={onDeleteTask}
                 onToggleImportant={onToggleImportant}
+                onTaskClick={handleTaskClick}
               />
             ))}
           </div>
@@ -115,6 +133,7 @@ export function TaskList({
                 onToggle={onToggleTask}
                 onDelete={onDeleteTask}
                 onToggleImportant={onToggleImportant}
+                onTaskClick={handleTaskClick}
               />
             ))}
           </div>
@@ -130,6 +149,14 @@ export function TaskList({
           </div>
         )}
       </div>
+
+      <TaskDetailsSheet
+        task={selectedTask}
+        isOpen={isSheetOpen}
+        onClose={handleCloseSheet}
+        onUpdateTask={onUpdateTask}
+        onDeleteTask={onDeleteTask}
+      />
     </div>
   )
 }

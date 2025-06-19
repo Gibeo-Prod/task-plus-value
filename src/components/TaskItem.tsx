@@ -13,9 +13,10 @@ interface TaskItemProps {
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onToggleImportant: (id: string) => void
+  onTaskClick: (task: Task) => void
 }
 
-export function TaskItem({ task, onToggle, onDelete, onToggleImportant }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskClick }: TaskItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -34,16 +35,26 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant }: TaskIt
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed
   const hasReminder = task.reminderDate && new Date(task.reminderDate) > new Date()
 
+  const handleTaskClick = (e: React.MouseEvent) => {
+    // Não abrir o painel se clicou em um botão ou checkbox
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('[role="checkbox"]')) {
+      return
+    }
+    onTaskClick(task)
+  }
+
   return (
     <div
       className={cn(
-        "group border rounded-lg transition-all duration-200",
+        "group border rounded-lg transition-all duration-200 cursor-pointer",
         "hover:bg-muted/50 hover:shadow-sm",
         task.completed && "opacity-60",
         isOverdue && "border-red-200 bg-red-50/50"
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleTaskClick}
     >
       <div className="flex items-start gap-3 p-3">
         <Checkbox
@@ -70,7 +81,10 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant }: TaskIt
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onToggleImportant(task.id)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleImportant(task.id)
+                }}
                 className={cn(
                   "h-8 w-8 p-0 hover:bg-yellow-100",
                   task.important && "text-yellow-500"
@@ -82,7 +96,10 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant }: TaskIt
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(task.id)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(task.id)
+                }}
                 className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
               >
                 <Trash2 className="w-4 h-4" />
@@ -147,7 +164,12 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant }: TaskIt
           {(task.notes || (task.tags && task.tags.length > 2)) && (
             <Collapsible open={showDetails} onOpenChange={setShowDetails}>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 text-xs text-muted-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <FileText className="w-3 h-3 mr-1" />
                   {showDetails ? "Ocultar detalhes" : "Ver detalhes"}
                 </Button>
