@@ -1,4 +1,3 @@
-
 export interface Task {
   id: string
   text: string
@@ -11,6 +10,7 @@ export interface Task {
   notes?: string
   reminderDate?: string
   tags?: TaskTag[]
+  assignedTo?: string
 }
 
 export interface TaskCategory {
