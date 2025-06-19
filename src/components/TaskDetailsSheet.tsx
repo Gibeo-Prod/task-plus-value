@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { Task } from "@/types/tasks"
 
@@ -15,6 +16,11 @@ interface TaskDetailsSheetProps {
   onClose: () => void
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
   onDeleteTask: (taskId: string) => void
+}
+
+interface Subtask {
+  text: string
+  completed: boolean
 }
 
 export function TaskDetailsSheet({ 
@@ -33,9 +39,52 @@ export function TaskDetailsSheet({
 
   if (!task) return null
 
+  // Extrair etapas das notas
+  const extractSubtasks = (notesText: string): { subtasks: Subtask[], otherNotes: string } => {
+    if (!notesText) return { subtasks: [], otherNotes: "" }
+    
+    const lines = notesText.split('\n')
+    const subtasks: Subtask[] = []
+    const otherNotes: string[] = []
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim()
+      if (trimmedLine.startsWith('•')) {
+        const text = trimmedLine.substring(1).trim()
+        subtasks.push({ text, completed: false })
+      } else if (trimmedLine.startsWith('✓')) {
+        const text = trimmedLine.substring(1).trim()
+        subtasks.push({ text, completed: true })
+      } else if (trimmedLine) {
+        otherNotes.push(line)
+      }
+    })
+    
+    return { subtasks, otherNotes: otherNotes.join('\n') }
+  }
+
+  const { subtasks, otherNotes } = extractSubtasks(notes)
+
   const handleNotesChange = (value: string) => {
     setNotes(value)
     onUpdateTask(task.id, { notes: value })
+  }
+
+  const handleSubtaskToggle = (index: number) => {
+    const updatedSubtasks = [...subtasks]
+    updatedSubtasks[index].completed = !updatedSubtasks[index].completed
+    
+    // Reconstituir as notas com as etapas atualizadas
+    const subtaskLines = updatedSubtasks.map(subtask => 
+      `${subtask.completed ? '✓' : '•'} ${subtask.text}`
+    )
+    
+    const updatedNotes = subtaskLines.length > 0 
+      ? (otherNotes ? `${subtaskLines.join('\n')}\n${otherNotes}` : subtaskLines.join('\n'))
+      : otherNotes
+    
+    setNotes(updatedNotes)
+    onUpdateTask(task.id, { notes: updatedNotes })
   }
 
   const handleDeleteTask = () => {
@@ -72,11 +121,10 @@ export function TaskDetailsSheet({
 
   const handleAddSubtask = () => {
     if (newSubtask.trim()) {
-      // Para simplicidade, vamos adicionar como uma nota por enquanto
-      const currentNotes = task.notes || ""
-      const updatedNotes = currentNotes 
-        ? `${currentNotes}\n• ${newSubtask.trim()}`
-        : `• ${newSubtask.trim()}`
+      const newSubtaskLine = `• ${newSubtask.trim()}`
+      const updatedNotes = notes 
+        ? `${newSubtaskLine}\n${notes}`
+        : newSubtaskLine
       
       onUpdateTask(task.id, { notes: updatedNotes })
       setNotes(updatedNotes)
@@ -112,6 +160,25 @@ export function TaskDetailsSheet({
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
+          {/* Lista de etapas existentes */}
+          {subtasks.length > 0 && (
+            <div className="space-y-2">
+              {subtasks.map((subtask, index) => (
+                <div key={index} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
+                  <Checkbox
+                    checked={subtask.completed}
+                    onCheckedChange={() => handleSubtaskToggle(index)}
+                    className="shrink-0"
+                  />
+                  <span className={`text-sm ${subtask.completed ? 'line-through text-gray-500' : ''}`}>
+                    {subtask.text}
+                  </span>
+                </div>
+              ))}
+              <Separator className="my-3" />
+            </div>
+          )}
+
           {/* Adicionar etapa */}
           {showSubtaskInput ? (
             <div className="space-y-2">
@@ -259,8 +326,14 @@ export function TaskDetailsSheet({
             </div>
             <Textarea
               placeholder="Adicione uma anotação..."
-              value={notes}
-              onChange={(e) => handleNotesChange(e.target.value)}
+              value={otherNotes}
+              onChange={(e) => {
+                const updatedNotes = subtasks.length > 0 
+                  ? `${subtasks.map(s => `${s.completed ? '✓' : '•'} ${s.text}`).join('\n')}\n${e.target.value}`
+                  : e.target.value
+                setNotes(updatedNotes)
+                handleNotesChange(updatedNotes)
+              }}
               className="min-h-[100px] resize-none"
             />
           </div>
