@@ -5,27 +5,6 @@ import { TaskList } from "@/components/TaskList"
 import { useToast } from "@/hooks/use-toast"
 import { Task, TaskCategory, TaskTag, Project } from "@/types/tasks"
 
-interface Task {
-  id: string
-  text: string
-  completed: boolean
-  important: boolean
-  dueDate?: string
-  projectId?: string
-  categoryId?: string
-  priority?: 'low' | 'medium' | 'high'
-  notes?: string
-  reminderDate?: string
-  tags?: TaskTag[]
-}
-
-interface Project {
-  id: string
-  name: string
-  value: number
-  tasks: number
-}
-
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
