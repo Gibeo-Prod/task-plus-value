@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { X, Plus, Sun, Clock, Calendar, Repeat, User, Paperclip, FileText, Trash2 } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -35,6 +34,8 @@ export function TaskDetailsSheet({
   const [newSubtask, setNewSubtask] = useState("")
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showReminderPicker, setShowReminderPicker] = useState(false)
+  const [showAssignPicker, setShowAssignPicker] = useState(false)
+  const [assignTo, setAssignTo] = useState("")
   const { toast } = useToast()
 
   if (!task) return null
@@ -136,6 +137,38 @@ export function TaskDetailsSheet({
         description: "Nova etapa criada com sucesso",
       })
     }
+  }
+
+  const handleAssignTask = () => {
+    if (assignTo.trim()) {
+      onUpdateTask(task.id, { assignedTo: assignTo.trim() })
+      setShowAssignPicker(false)
+      setAssignTo("")
+      toast({
+        title: "Tarefa atribuída",
+        description: `Tarefa atribuída para ${assignTo.trim()}`,
+      })
+    }
+  }
+
+  const handleAddFile = () => {
+    // Criar um input file temporário
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.multiple = true
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files
+      if (files && files.length > 0) {
+        const fileNames = Array.from(files).map(file => file.name)
+        toast({
+          title: "Arquivos anexados",
+          description: `${fileNames.length} arquivo(s) anexado(s): ${fileNames.join(', ')}`,
+        })
+        // Aqui você poderia implementar o upload real dos arquivos
+        // Por enquanto, vamos apenas mostrar o toast de confirmação
+      }
+    }
+    input.click()
   }
 
   const isInMyDay = task.dueDate === new Date().toISOString().split('T')[0]
@@ -300,17 +333,60 @@ export function TaskDetailsSheet({
               </Button>
             )}
 
-            <Button variant="ghost" className="w-full justify-start h-12 px-3">
-              <Repeat className="w-4 h-4 mr-3" />
-              <span>Repetir</span>
-            </Button>
+            {showAssignPicker ? (
+              <div className="space-y-2 p-3 border rounded">
+                <label className="text-sm font-medium">Atribuir tarefa para</label>
+                <Input
+                  type="text"
+                  placeholder="Digite o nome ou email"
+                  value={assignTo}
+                  onChange={(e) => setAssignTo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAssignTask()
+                    } else if (e.key === 'Escape') {
+                      setShowAssignPicker(false)
+                      setAssignTo("")
+                    }
+                  }}
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleAssignTask}>
+                    Atribuir
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowAssignPicker(false)
+                      setAssignTo("")
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start h-12 px-3"
+                onClick={() => setShowAssignPicker(true)}
+              >
+                <User className="w-4 h-4 mr-3" />
+                <span>Atribuir a</span>
+                {task.assignedTo && (
+                  <span className="ml-auto text-sm text-muted-foreground">
+                    {task.assignedTo}
+                  </span>
+                )}
+              </Button>
+            )}
 
-            <Button variant="ghost" className="w-full justify-start h-12 px-3">
-              <User className="w-4 h-4 mr-3" />
-              <span>Atribuir a</span>
-            </Button>
-
-            <Button variant="ghost" className="w-full justify-start h-12 px-3">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start h-12 px-3"
+              onClick={handleAddFile}
+            >
               <Paperclip className="w-4 h-4 mr-3" />
               <span>Adicionar arquivo</span>
             </Button>
