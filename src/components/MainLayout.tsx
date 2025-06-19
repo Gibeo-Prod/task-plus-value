@@ -1,8 +1,11 @@
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { LogOut } from "lucide-react"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TaskList } from "@/components/TaskList"
 import { ProjectList } from "@/components/ProjectList"
+import { useAuth } from "@/contexts/AuthContext"
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
 import { getFilteredTasks, getViewTitle, getViewSubtitle } from "@/utils/dataOperations"
 
@@ -15,6 +18,7 @@ interface MainLayoutProps {
   tags: TaskTag[]
   selectedView: string
   selectedProject: Project | null
+  loading?: boolean
   
   // Actions
   onAddTask: (data: {
@@ -57,6 +61,7 @@ export function MainLayout({
   tags,
   selectedView,
   selectedProject,
+  loading = false,
   onAddTask,
   onToggleTask,
   onDeleteTask,
@@ -70,9 +75,26 @@ export function MainLayout({
   onProjectClick,
   onBackToClient,
 }: MainLayoutProps) {
+  const { signOut, user } = useAuth()
+  
   const currentClient = selectedView.startsWith("client-") ? clients.find(c => c.id === selectedView) : null
   const clientProjects = currentClient ? projects.filter(p => p.clientId === currentClient.id) : []
   const filteredTasks = getFilteredTasks(tasks, selectedView, selectedProject)
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ms-blue mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Carregando dados...</p>
+        </div>
+      </div>
+    )
+  }
 
   const renderMainContent = () => {
     if (selectedProject) {
@@ -139,11 +161,26 @@ export function MainLayout({
         />
         <main className="flex-1 flex flex-col">
           <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex items-center gap-4 p-4">
-              <SidebarTrigger className="hover:bg-ms-blue-light" />
-              <h2 className="text-sm font-medium text-muted-foreground">
-                Agend
-              </h2>
+            <div className="flex items-center justify-between gap-4 p-4">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="hover:bg-ms-blue-light" />
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  Agend
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {user?.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="hover:bg-ms-blue-light"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
           

@@ -14,6 +14,9 @@ interface UseAppActionsProps {
   tags: TaskTag[]
   setTags: React.Dispatch<React.SetStateAction<TaskTag[]>>
   selectedProject: Project | null
+  addTask: (data: any) => void
+  addClient: (data: any) => void
+  addProject: (data: any) => void
   toast: any
 }
 
@@ -29,10 +32,13 @@ export const useAppActions = ({
   tags,
   setTags,
   selectedProject,
+  addTask,
+  addClient,
+  addProject,
   toast
 }: UseAppActionsProps) => {
 
-  const addTask = (data: {
+  const handleAddTask = (data: {
     text: string
     dueDate?: string
     categoryId?: string
@@ -41,21 +47,9 @@ export const useAppActions = ({
     reminderDate?: string
     tags?: TaskTag[]
   }) => {
-    const newTask = createTask(data, selectedProject)
-    setTasks(prev => [...prev, newTask])
-    
-    // Update project task count
-    if (selectedProject) {
-      setProjects(prev => prev.map(project => 
-        project.id === selectedProject.id 
-          ? { ...project, tasks: project.tasks + 1 }
-          : project
-      ))
-    }
-
-    toast({
-      title: "Tarefa adicionada",
-      description: "Nova tarefa criada com sucesso!",
+    addTask({
+      ...data,
+      projectId: selectedProject?.id
     })
   }
 
@@ -79,12 +73,11 @@ export const useAppActions = ({
     })
   }
 
-  const addClient = (name: string, email: string, company?: string) => {
-    const newClient = createClient(name, email, company)
-    setClients(prev => [...prev, newClient])
+  const handleAddClient = (name: string, email: string, company?: string) => {
+    addClient({ name, email, company })
   }
 
-  const addProject = (clientId: string, projectData: {
+  const handleAddProject = (clientId: string, projectData: {
     name: string
     description?: string
     value: number
@@ -93,20 +86,7 @@ export const useAppActions = ({
     startDate?: string
     dueDate?: string
   }) => {
-    const newProject = createProject(clientId, projectData)
-    setProjects(prev => [...prev, newProject])
-    
-    // Update client project count
-    setClients(prev => prev.map(client => 
-      client.id === clientId 
-        ? { ...client, projects: client.projects + 1 }
-        : client
-    ))
-
-    toast({
-      title: "Projeto criado",
-      description: `Projeto "${projectData.name}" criado com sucesso!`,
-    })
+    addProject({ clientId, ...projectData })
   }
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
@@ -119,21 +99,6 @@ export const useAppActions = ({
     setTasks(prev => prev.map(task => {
       if (task.id === id) {
         const updatedTask = { ...task, completed: !task.completed }
-        
-        // Update project task count
-        if (updatedTask.projectId) {
-          setProjects(prevProjects => prevProjects.map(project => 
-            project.id === updatedTask.projectId 
-              ? { 
-                  ...project, 
-                  tasks: updatedTask.completed 
-                    ? project.tasks - 1 
-                    : project.tasks + 1 
-                }
-              : project
-          ))
-        }
-        
         return updatedTask
       }
       return task
@@ -141,18 +106,7 @@ export const useAppActions = ({
   }
 
   const deleteTask = (id: string) => {
-    const taskToDelete = tasks.find(task => task.id === id)
-    
     setTasks(prev => prev.filter(task => task.id !== id))
-    
-    // Update project task count
-    if (taskToDelete?.projectId && !taskToDelete.completed) {
-      setProjects(prev => prev.map(project => 
-        project.id === taskToDelete.projectId 
-          ? { ...project, tasks: project.tasks - 1 }
-          : project
-      ))
-    }
 
     toast({
       title: "Tarefa removida",
@@ -167,11 +121,11 @@ export const useAppActions = ({
   }
 
   return {
-    addTask,
+    addTask: handleAddTask,
     addCategory,
     addTag,
-    addClient,
-    addProject,
+    addClient: handleAddClient,
+    addProject: handleAddProject,
     updateTask,
     toggleTask,
     deleteTask,
