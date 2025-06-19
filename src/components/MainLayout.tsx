@@ -1,0 +1,155 @@
+
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/AppSidebar"
+import { TaskList } from "@/components/TaskList"
+import { ProjectList } from "@/components/ProjectList"
+import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
+import { getFilteredTasks, getViewTitle, getViewSubtitle } from "@/utils/dataOperations"
+
+interface MainLayoutProps {
+  // State
+  tasks: Task[]
+  clients: Client[]
+  projects: Project[]
+  categories: TaskCategory[]
+  tags: TaskTag[]
+  selectedView: string
+  selectedProject: Project | null
+  
+  // Actions
+  onAddTask: (data: {
+    text: string
+    dueDate?: string
+    categoryId?: string
+    priority?: 'low' | 'medium' | 'high'
+    notes?: string
+    reminderDate?: string
+    tags?: TaskTag[]
+  }) => void
+  onToggleTask: (id: string) => void
+  onDeleteTask: (id: string) => void
+  onToggleImportant: (id: string) => void
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void
+  onAddCategory: (name: string, color: string, icon: string) => void
+  onAddTag: (name: string, color: string) => void
+  onAddClient: (name: string, email: string, company?: string) => void
+  onAddProject: (clientId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => void
+  
+  // Navigation
+  onViewChange: (view: string) => void
+  onProjectClick: (project: Project) => void
+  onBackToClient: () => void
+}
+
+export function MainLayout({
+  tasks,
+  clients,
+  projects,
+  categories,
+  tags,
+  selectedView,
+  selectedProject,
+  onAddTask,
+  onToggleTask,
+  onDeleteTask,
+  onToggleImportant,
+  onUpdateTask,
+  onAddCategory,
+  onAddTag,
+  onAddClient,
+  onAddProject,
+  onViewChange,
+  onProjectClick,
+  onBackToClient,
+}: MainLayoutProps) {
+  const currentClient = selectedView.startsWith("client-") ? clients.find(c => c.id === selectedView) : null
+  const clientProjects = currentClient ? projects.filter(p => p.clientId === currentClient.id) : []
+  const filteredTasks = getFilteredTasks(tasks, selectedView, selectedProject)
+
+  const renderMainContent = () => {
+    if (selectedProject) {
+      // Show tasks for selected project
+      return (
+        <TaskList
+          tasks={filteredTasks}
+          title={getViewTitle(selectedView, selectedProject, clients)}
+          subtitle={getViewSubtitle(selectedView, selectedProject, clients)}
+          onAddTask={onAddTask}
+          onToggleTask={onToggleTask}
+          onDeleteTask={onDeleteTask}
+          onToggleImportant={onToggleImportant}
+          onUpdateTask={onUpdateTask}
+          categories={categories}
+          tags={tags}
+          onAddCategory={onAddCategory}
+          onAddTag={onAddTag}
+          showBackButton={true}
+          onBack={onBackToClient}
+        />
+      )
+    }
+    
+    if (currentClient) {
+      // Show projects for selected client
+      return (
+        <ProjectList
+          client={currentClient}
+          projects={clientProjects}
+          onAddProject={(projectData) => onAddProject(currentClient.id, projectData)}
+          onProjectClick={onProjectClick}
+        />
+      )
+    }
+    
+    // Show default task views
+    return (
+      <TaskList
+        tasks={filteredTasks}
+        title={getViewTitle(selectedView, selectedProject, clients)}
+        subtitle={getViewSubtitle(selectedView, selectedProject, clients)}
+        onAddTask={onAddTask}
+        onToggleTask={onToggleTask}
+        onDeleteTask={onDeleteTask}
+        onToggleImportant={onToggleImportant}
+        onUpdateTask={onUpdateTask}
+        categories={categories}
+        tags={tags}
+        onAddCategory={onAddCategory}
+        onAddTag={onAddTag}
+      />
+    )
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-indigo-50">
+        <AppSidebar 
+          selectedView={selectedView}
+          onViewChange={onViewChange}
+          clients={clients}
+          onAddClient={onAddClient}
+        />
+        <main className="flex-1 flex flex-col">
+          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center gap-4 p-4">
+              <SidebarTrigger className="hover:bg-ms-blue-light" />
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Agend
+              </h2>
+            </div>
+          </div>
+          
+          {renderMainContent()}
+        </main>
+      </div>
+    </SidebarProvider>
+  )
+}
