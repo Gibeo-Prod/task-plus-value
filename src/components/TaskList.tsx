@@ -1,24 +1,28 @@
 
 import { TaskItem } from "./TaskItem"
 import { TaskInput } from "./TaskInput"
-
-interface Task {
-  id: string
-  text: string
-  completed: boolean
-  important: boolean
-  dueDate?: string
-  projectId?: string
-}
+import { Task, TaskCategory, TaskTag } from "@/types/tasks"
 
 interface TaskListProps {
   tasks: Task[]
   title: string
   subtitle?: string
-  onAddTask: (text: string, dueDate?: string) => void
+  onAddTask: (data: {
+    text: string
+    dueDate?: string
+    categoryId?: string
+    priority?: 'low' | 'medium' | 'high'
+    notes?: string
+    reminderDate?: string
+    tags?: TaskTag[]
+  }) => void
   onToggleTask: (id: string) => void
   onDeleteTask: (id: string) => void
   onToggleImportant: (id: string) => void
+  categories: TaskCategory[]
+  tags: TaskTag[]
+  onAddCategory: (name: string, color: string, icon: string) => void
+  onAddTag: (name: string, color: string) => void
 }
 
 export function TaskList({
@@ -29,9 +33,33 @@ export function TaskList({
   onToggleTask,
   onDeleteTask,
   onToggleImportant,
+  categories,
+  tags,
+  onAddCategory,
+  onAddTag,
 }: TaskListProps) {
   const incompleteTasks = tasks.filter(task => !task.completed)
   const completedTasks = tasks.filter(task => task.completed)
+
+  // Sort tasks by priority and due date
+  const sortedIncompleteTasks = incompleteTasks.sort((a, b) => {
+    const priorityOrder = { high: 3, medium: 2, low: 1 }
+    const aPriority = priorityOrder[a.priority || 'medium']
+    const bPriority = priorityOrder[b.priority || 'medium']
+    
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority
+    }
+    
+    if (a.dueDate && b.dueDate) {
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    }
+    
+    if (a.dueDate) return -1
+    if (b.dueDate) return 1
+    
+    return 0
+  })
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -48,12 +76,18 @@ export function TaskList({
         </div>
       </div>
 
-      <TaskInput onAddTask={onAddTask} />
+      <TaskInput 
+        onAddTask={onAddTask}
+        categories={categories}
+        tags={tags}
+        onAddCategory={onAddCategory}
+        onAddTag={onAddTag}
+      />
 
       <div className="space-y-4">
-        {incompleteTasks.length > 0 && (
+        {sortedIncompleteTasks.length > 0 && (
           <div className="space-y-2">
-            {incompleteTasks.map((task) => (
+            {sortedIncompleteTasks.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}

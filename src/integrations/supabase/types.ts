@@ -219,6 +219,36 @@ export type Database = {
           },
         ]
       }
+      task_categories: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       task_notes: {
         Row: {
           content: string
@@ -254,6 +284,33 @@ export type Database = {
           },
         ]
       }
+      task_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          is_sent: boolean
+          reminder_date: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean
+          reminder_date: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean
+          reminder_date?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       task_statuses: {
         Row: {
           color: string
@@ -284,14 +341,63 @@ export type Database = {
         }
         Relationships: []
       }
+      task_tag_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          tag_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag_id?: string
+          task_id?: string
+        }
+        Relationships: []
+      }
+      task_tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           activity: string
+          category_id: string | null
           created_at: string
           date: string
           id: string
+          notes: string | null
+          priority: string | null
           project: string
           project_value: number
+          reminder_date: string | null
           responsible: string
           status: string
           updated_at: string
@@ -299,11 +405,15 @@ export type Database = {
         }
         Insert: {
           activity: string
+          category_id?: string | null
           created_at?: string
           date: string
           id?: string
+          notes?: string | null
+          priority?: string | null
           project: string
           project_value?: number
+          reminder_date?: string | null
           responsible: string
           status: string
           updated_at?: string
@@ -311,11 +421,15 @@ export type Database = {
         }
         Update: {
           activity?: string
+          category_id?: string | null
           created_at?: string
           date?: string
           id?: string
+          notes?: string | null
+          priority?: string | null
           project?: string
           project_value?: number
+          reminder_date?: string | null
           responsible?: string
           status?: string
           updated_at?: string

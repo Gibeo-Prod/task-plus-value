@@ -1,9 +1,9 @@
-
 import { useState } from "react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TaskList } from "@/components/TaskList"
 import { useToast } from "@/hooks/use-toast"
+import { Task, TaskCategory, TaskTag, Project } from "@/types/tasks"
 
 interface Task {
   id: string
@@ -12,6 +12,11 @@ interface Task {
   important: boolean
   dueDate?: string
   projectId?: string
+  categoryId?: string
+  priority?: 'low' | 'medium' | 'high'
+  notes?: string
+  reminderDate?: string
+  tags?: TaskTag[]
 }
 
 interface Project {
@@ -24,16 +29,59 @@ interface Project {
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [categories, setCategories] = useState<TaskCategory[]>([
+    {
+      id: "personal",
+      name: "Pessoal",
+      color: "#3b82f6",
+      icon: "home",
+      userId: "demo"
+    },
+    {
+      id: "work",
+      name: "Trabalho",
+      color: "#10b981",
+      icon: "briefcase",
+      userId: "demo"
+    }
+  ])
+  const [tags, setTags] = useState<TaskTag[]>([
+    {
+      id: "urgent",
+      name: "Urgente",
+      color: "#ef4444",
+      userId: "demo"
+    },
+    {
+      id: "meeting",
+      name: "Reunião",
+      color: "#8b5cf6",
+      userId: "demo"
+    }
+  ])
   const [selectedView, setSelectedView] = useState("myday")
   const { toast } = useToast()
 
-  const addTask = (text: string, dueDate?: string) => {
+  const addTask = (data: {
+    text: string
+    dueDate?: string
+    categoryId?: string
+    priority?: 'low' | 'medium' | 'high'
+    notes?: string
+    reminderDate?: string
+    tags?: TaskTag[]
+  }) => {
     const newTask: Task = {
       id: Date.now().toString(),
-      text,
+      text: data.text,
       completed: false,
       important: false,
-      dueDate,
+      dueDate: data.dueDate,
+      categoryId: data.categoryId,
+      priority: data.priority || 'medium',
+      notes: data.notes,
+      reminderDate: data.reminderDate,
+      tags: data.tags || [],
       projectId: selectedView.startsWith("project-") ? selectedView : undefined,
     }
 
@@ -51,6 +99,37 @@ const Index = () => {
     toast({
       title: "Tarefa adicionada",
       description: "Nova tarefa criada com sucesso!",
+    })
+  }
+
+  const addCategory = (name: string, color: string, icon: string) => {
+    const newCategory: TaskCategory = {
+      id: `category-${Date.now()}`,
+      name,
+      color,
+      icon,
+      userId: "demo"
+    }
+    setCategories(prev => [...prev, newCategory])
+    
+    toast({
+      title: "Categoria criada",
+      description: `Categoria "${name}" criada com sucesso!`,
+    })
+  }
+
+  const addTag = (name: string, color: string) => {
+    const newTag: TaskTag = {
+      id: `tag-${Date.now()}`,
+      name,
+      color,
+      userId: "demo"
+    }
+    setTags(prev => [...prev, newTag])
+    
+    toast({
+      title: "Etiqueta criada",
+      description: `Etiqueta "${name}" criada com sucesso!`,
     })
   }
 
@@ -213,6 +292,10 @@ const Index = () => {
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onToggleImportant={toggleImportant}
+            categories={categories}
+            tags={tags}
+            onAddCategory={addCategory}
+            onAddTag={addTag}
           />
         </main>
       </div>
