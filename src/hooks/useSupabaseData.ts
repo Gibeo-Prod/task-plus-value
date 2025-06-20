@@ -149,6 +149,19 @@ export const useSupabaseData = () => {
     enabled: !!user
   })
 
+  // Helper function to map frontend status to database values
+  const mapStatusToDb = (frontendStatus: string): string => {
+    const statusMap = {
+      'planejamento': 'new',
+      'em-andamento': 'in_progress',
+      'em-revisao': 'in_review',
+      'concluido': 'completed',
+      'pausado': 'on_hold',
+      'cancelado': 'cancelled'
+    }
+    return statusMap[frontendStatus as keyof typeof statusMap] || 'new'
+  }
+
   // Add task mutation
   const addTaskMutation = useMutation({
     mutationFn: async (taskData: {
@@ -252,6 +265,8 @@ export const useSupabaseData = () => {
     }) => {
       if (!user) throw new Error('User not authenticated')
       
+      console.log('Adding project with data:', projectData)
+      
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -260,17 +275,22 @@ export const useSupabaseData = () => {
           name: projectData.name,
           description: projectData.description,
           value: projectData.value,
-          status: projectData.status,
+          status: mapStatusToDb(projectData.status),
           priority: projectData.priority,
           start_date: projectData.startDate || new Date().toISOString().split('T')[0],
           due_date: projectData.dueDate,
-          category: 'Geral',
+          category: 'other', // Use valid constraint value
           assigned_to: user.email || 'Usuário'
         })
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('Error creating project:', error)
+        throw error
+      }
+      
+      console.log('Project created successfully:', data)
       return data
     },
     onSuccess: () => {
@@ -279,6 +299,14 @@ export const useSupabaseData = () => {
       toast({
         title: "Projeto criado",
         description: "Novo projeto criado com sucesso!",
+      })
+    },
+    onError: (error) => {
+      console.error('Project mutation error:', error)
+      toast({
+        title: "Erro",
+        description: "Erro ao criar projeto: " + error.message,
+        variant: "destructive"
       })
     }
   })

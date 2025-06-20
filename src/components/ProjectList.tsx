@@ -62,11 +62,31 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "new":
       case "planejamento": return "bg-gray-100 text-gray-800"
+      case "in_progress":
       case "em-andamento": return "bg-blue-100 text-blue-800"
+      case "completed":
       case "concluido": return "bg-green-100 text-green-800"
+      case "on_hold":
       case "pausado": return "bg-yellow-100 text-yellow-800"
+      case "in_review":
+      case "em-revisao": return "bg-purple-100 text-purple-800"
+      case "cancelled":
+      case "cancelado": return "bg-red-100 text-red-800"
       default: return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "new": return "Planejamento"
+      case "in_progress": return "Em Andamento"
+      case "in_review": return "Em Revisão"
+      case "completed": return "Concluído"
+      case "on_hold": return "Pausado"
+      case "cancelled": return "Cancelado"
+      default: return status
     }
   }
 
@@ -76,6 +96,15 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
       case "medium": return "text-yellow-600"
       case "low": return "text-green-600"
       default: return "text-gray-600"
+    }
+  }
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "high": return "Alta"
+      case "medium": return "Média"
+      case "low": return "Baixa"
+      default: return priority
     }
   }
 
@@ -148,8 +177,10 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
                   <SelectContent>
                     <SelectItem value="planejamento">Planejamento</SelectItem>
                     <SelectItem value="em-andamento">Em Andamento</SelectItem>
+                    <SelectItem value="em-revisao">Em Revisão</SelectItem>
                     <SelectItem value="concluido">Concluído</SelectItem>
                     <SelectItem value="pausado">Pausado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -242,18 +273,14 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
                         </div>
                       )}
                       <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(project.status)}`}>
-                        {project.status === 'planejamento' ? 'Planejamento' :
-                         project.status === 'em-andamento' ? 'Em Andamento' :
-                         project.status === 'concluido' ? 'Concluído' : 
-                         project.status === 'pausado' ? 'Pausado' : project.status}
+                        {getStatusLabel(project.status)}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className={`text-xs font-medium ${getPriorityColor(project.priority)}`}>
-                    {project.priority === 'high' ? 'Alta' :
-                     project.priority === 'medium' ? 'Média' : 'Baixa'}
+                    {getPriorityLabel(project.priority)}
                   </span>
                   {project.tasks > 0 && (
                     <span className="text-xs bg-muted px-2 py-1 rounded-full">
