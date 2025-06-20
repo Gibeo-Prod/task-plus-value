@@ -33,6 +33,16 @@ export interface TaskTag {
   userId: string
 }
 
+export interface TaskReminder {
+  id: string
+  task_id: string
+  user_id: string
+  reminder_date: string
+  is_sent: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Client {
   id: string
   name: string

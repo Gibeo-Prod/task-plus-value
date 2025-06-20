@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useReminders } from "@/hooks/useReminders"
 import { Task } from "@/types/tasks"
 
 interface TaskDetailsSheetProps {
@@ -49,8 +50,11 @@ export function TaskDetailsSheet({
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [previewFile, setPreviewFile] = useState<AttachedFile | null>(null)
   const { toast } = useToast()
+  const { createReminder, updateReminder, deleteReminder, getReminderForTask } = useReminders()
 
   if (!task) return null
+
+  const existingReminder = getReminderForTask(task.id)
 
   // Extrair etapas das notas
   const extractSubtasks = (notesText: string): { subtasks: Subtask[], otherNotes: string } => {
@@ -119,12 +123,26 @@ export function TaskDetailsSheet({
   }
 
   const handleSetReminder = (reminderDate: string) => {
-    // Reminder functionality not available in current structure
-    toast({
-      title: "Funcionalidade não disponível",
-      description: "Lembretes não estão disponíveis na estrutura atual",
-      variant: "destructive"
-    })
+    if (!reminderDate) return
+    
+    if (existingReminder) {
+      updateReminder({ 
+        reminderId: existingReminder.id, 
+        reminderDate 
+      })
+    } else {
+      createReminder({ 
+        taskId: task.id, 
+        reminderDate 
+      })
+    }
+    setShowReminderPicker(false)
+  }
+
+  const handleRemoveReminder = () => {
+    if (existingReminder) {
+      deleteReminder(existingReminder.id)
+    }
   }
 
   const handleSetDueDate = (dueDate: string) => {
@@ -235,6 +253,17 @@ export function TaskDetailsSheet({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  const formatReminderDate = (dateString: string): string => {
+    const date = new Date(dateString)
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   const isInMyDay = task.dueDate === new Date().toISOString().split('T')[0]
 
   return (
@@ -337,9 +366,23 @@ export function TaskDetailsSheet({
 
               {showReminderPicker ? (
                 <div className="space-y-2 p-3 border rounded">
-                  <label className="text-sm font-medium">Definir lembrete</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Definir lembrete</label>
+                    {existingReminder && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRemoveReminder}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     type="datetime-local"
+                    defaultValue={existingReminder?.reminder_date ? 
+                      new Date(existingReminder.reminder_date).toISOString().slice(0, 16) : ''}
                     onChange={(e) => handleSetReminder(e.target.value)}
                   />
                   <Button 
@@ -358,9 +401,11 @@ export function TaskDetailsSheet({
                 >
                   <Clock className="w-4 h-4 mr-3" />
                   <span>Lembrar-me</span>
-                  <span className="ml-auto text-sm text-muted-foreground">
-                    Não disponível
-                  </span>
+                  {existingReminder && (
+                    <span className="ml-auto text-sm text-muted-foreground">
+                      {formatReminderDate(existingReminder.reminder_date)}
+                    </span>
+                  )}
                 </Button>
               )}
 
