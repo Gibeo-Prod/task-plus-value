@@ -1,6 +1,7 @@
 
 import { TaskList } from "@/components/TaskList"
 import { ProjectList } from "@/components/ProjectList"
+import { ProjectDetails } from "@/components/ProjectDetails"
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
 import { getFilteredTasks, getViewTitle, getViewSubtitle } from "@/utils/dataOperations"
 
@@ -65,6 +66,7 @@ export function MainContent({
   const currentClient = currentClientId ? clients.find(c => c.id === currentClientId) : null
   const clientProjects = currentClient ? projects.filter(p => p.clientId === currentClient.id) : []
   const filteredTasks = getFilteredTasks(tasks, selectedView, selectedProject)
+  const projectTasks = selectedProject ? tasks.filter(t => t.projectId === selectedProject.id) : []
 
   const handleAddTaskWithProject = (taskData: {
     text: string
@@ -84,22 +86,19 @@ export function MainContent({
 
   if (selectedProject) {
     return (
-      <TaskList
-        tasks={filteredTasks}
-        title={getViewTitle(selectedView, selectedProject, clients)}
-        subtitle={getViewSubtitle(selectedView, selectedProject, clients)}
+      <ProjectDetails
+        project={selectedProject}
+        tasks={projectTasks}
+        categories={categories}
+        tags={tags}
+        onBack={onBackToClient}
         onAddTask={handleAddTaskWithProject}
         onToggleTask={onToggleTask}
         onDeleteTask={onDeleteTask}
         onToggleImportant={onToggleImportant}
         onUpdateTask={onUpdateTask}
-        categories={categories}
-        tags={tags}
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
-        showBackButton={true}
-        onBack={onBackToClient}
-        projectId={selectedProject.id}
       />
     )
   }
