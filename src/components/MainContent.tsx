@@ -85,9 +85,13 @@ export function MainContent({
   }
 
   if (selectedProject) {
+    // Find the client for this project
+    const projectClient = clients.find(client => client.id === selectedProject.clientId)
+    
     return (
       <ProjectDetails
         project={selectedProject}
+        client={projectClient!} // We know this exists because the project references it
         tasks={projectTasks}
         categories={categories}
         tags={tags}

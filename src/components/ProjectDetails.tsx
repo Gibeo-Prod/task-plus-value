@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { ArrowLeft, MessageSquare, Plus, Calendar, DollarSign, Users, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"

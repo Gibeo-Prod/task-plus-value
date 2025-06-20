@@ -22,7 +22,23 @@ export const useProjectInvites = (projectId?: string) => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as ProjectInvite[]
+      
+      // Map the database fields to match our ProjectInvite interface
+      return data.map(invite => ({
+        id: invite.id,
+        projectId: invite.project_id,
+        clientId: invite.client_id,
+        invitedBy: invite.invited_by,
+        token: invite.token,
+        contactType: invite.contact_type as 'client' | 'contact_person',
+        recipientName: invite.recipient_name,
+        recipientPhone: invite.recipient_phone,
+        recipientEmail: invite.recipient_email,
+        expiresAt: invite.expires_at,
+        usedAt: invite.used_at,
+        createdAt: invite.created_at,
+        updatedAt: invite.updated_at
+      } as ProjectInvite))
     },
     enabled: !!projectId && !!user
   })
