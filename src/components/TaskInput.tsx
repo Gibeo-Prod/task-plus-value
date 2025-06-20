@@ -49,20 +49,29 @@ export function TaskInput({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (taskText.trim()) {
-      const taskData = {
-        text: taskText.trim(),
-        dueDate: dueDate || undefined,
-        categoryId,
-        priority,
-        notes: notes || undefined,
-        reminderDate: reminderDate || undefined,
-        tags: selectedTags,
-        projectId: projectId || undefined
-      }
-      
-      console.log('TaskInput submitting task:', taskData)
+    
+    if (!taskText.trim()) {
+      console.log('TaskInput: Empty task text, not submitting')
+      return
+    }
+    
+    const taskData = {
+      text: taskText.trim(),
+      dueDate: dueDate || undefined,
+      categoryId,
+      priority,
+      notes: notes || undefined,
+      reminderDate: reminderDate || undefined,
+      tags: selectedTags,
+      projectId: projectId || undefined
+    }
+    
+    console.log('TaskInput: Submitting task with data:', taskData)
+    console.log('TaskInput: onAddTask function type:', typeof onAddTask)
+    
+    try {
       onAddTask(taskData)
+      console.log('TaskInput: onAddTask called successfully')
       
       // Reset form
       setTaskText("")
@@ -73,14 +82,19 @@ export function TaskInput({
       setNotes("")
       setSelectedTags([])
       setShowAdvanced(false)
+      
+      console.log('TaskInput: Form reset completed')
+    } catch (error) {
+      console.error('TaskInput: Error calling onAddTask:', error)
     }
   }
 
-  console.log('TaskInput props:', { 
+  console.log('TaskInput render - props:', { 
     categoriesCount: categories.length, 
     tagsCount: tags.length,
     projectId,
-    onAddTask: typeof onAddTask
+    hasOnAddTask: !!onAddTask,
+    taskTextLength: taskText.length
   })
 
   return (

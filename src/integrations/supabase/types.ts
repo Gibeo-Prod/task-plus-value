@@ -258,9 +258,9 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
-          priority: string
+          priority?: string
           project_id?: string | null
-          status: string
+          status?: string
           title: string
           updated_at?: string
           user_id: string

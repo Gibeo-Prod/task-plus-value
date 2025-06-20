@@ -11,10 +11,15 @@ export const useCategoriesAndTags = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  console.log('useCategoriesAndTags hook - user:', user?.id, 'email:', user?.email)
+
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories', user?.id],
     queryFn: async () => {
-      if (!user) return []
+      if (!user) {
+        console.log('useCategoriesAndTags: No user found for categories, returning empty array')
+        return []
+      }
       console.log('Fetching categories for user:', user.id)
       
       const { data, error } = await supabase
@@ -28,7 +33,7 @@ export const useCategoriesAndTags = () => {
         throw error
       }
       
-      console.log('Categories fetched:', data)
+      console.log('Categories fetched successfully:', data?.length || 0, 'categories')
       return data.map(mapCategoryFromSupabase) as TaskCategory[]
     },
     enabled: !!user
@@ -37,7 +42,10 @@ export const useCategoriesAndTags = () => {
   const { data: tags = [], isLoading: tagsLoading } = useQuery({
     queryKey: ['tags', user?.id],
     queryFn: async () => {
-      if (!user) return []
+      if (!user) {
+        console.log('useCategoriesAndTags: No user found for tags, returning empty array')
+        return []
+      }
       console.log('Fetching tags for user:', user.id)
       
       const { data, error } = await supabase
@@ -51,7 +59,7 @@ export const useCategoriesAndTags = () => {
         throw error
       }
       
-      console.log('Tags fetched:', data)
+      console.log('Tags fetched successfully:', data?.length || 0, 'tags')
       return data.map(mapTagFromSupabase) as TaskTag[]
     },
     enabled: !!user
@@ -59,41 +67,56 @@ export const useCategoriesAndTags = () => {
 
   const addCategoryMutation = useMutation({
     mutationFn: async ({ name, color, icon }: { name: string, color: string, icon: string }) => {
-      if (!user) throw new Error('User not authenticated')
+      if (!user) {
+        console.error('addCategoryMutation: User not authenticated')
+        throw new Error('User not authenticated')
+      }
       
-      console.log('Adding category:', { name, color, icon, user_id: user.id })
+      console.log('addCategoryMutation: Starting with data:', { name, color, icon })
+      console.log('addCategoryMutation: User info:', { id: user.id, email: user.email })
+      
+      const categoryData = {
+        user_id: user.id,
+        name: name.trim(),
+        color: color,
+        icon: icon || 'folder'
+      }
+      
+      console.log('addCategoryMutation: Database category object:', categoryData)
       
       const { data, error } = await supabase
         .from('task_categories')
-        .insert({
-          user_id: user.id,
-          name: name,
-          color: color,
-          icon: icon || 'folder'
-        })
+        .insert(categoryData)
         .select()
         .single()
       
       if (error) {
-        console.error('Error creating category:', error)
+        console.error('addCategoryMutation: Database error:', error)
+        console.error('addCategoryMutation: Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
         throw error
       }
       
-      console.log('Category created successfully:', data)
+      console.log('addCategoryMutation: Category created successfully:', data)
       return data
     },
     onSuccess: () => {
+      console.log('addCategoryMutation: Success callback, invalidating queries')
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       toast({
         title: "Categoria criada",
         description: "Nova categoria criada com sucesso!",
       })
     },
-    onError: (error) => {
-      console.error('Add category mutation error:', error)
+    onError: (error: any) => {
+      console.error('addCategoryMutation: Error callback:', error)
       toast({
-        title: "Erro",
-        description: "Erro ao criar categoria: " + error.message,
+        title: "Erro ao criar categoria",
+        description: error.message || "Erro desconhecido ao criar categoria",
         variant: "destructive"
       })
     }
@@ -101,40 +124,55 @@ export const useCategoriesAndTags = () => {
 
   const addTagMutation = useMutation({
     mutationFn: async ({ name, color }: { name: string, color: string }) => {
-      if (!user) throw new Error('User not authenticated')
+      if (!user) {
+        console.error('addTagMutation: User not authenticated')
+        throw new Error('User not authenticated')
+      }
       
-      console.log('Adding tag:', { name, color, user_id: user.id })
+      console.log('addTagMutation: Starting with data:', { name, color })
+      console.log('addTagMutation: User info:', { id: user.id, email: user.email })
+      
+      const tagData = {
+        user_id: user.id,
+        name: name.trim(),
+        color: color
+      }
+      
+      console.log('addTagMutation: Database tag object:', tagData)
       
       const { data, error } = await supabase
         .from('task_tags')
-        .insert({
-          user_id: user.id,
-          name: name,
-          color: color
-        })
+        .insert(tagData)
         .select()
         .single()
       
       if (error) {
-        console.error('Error creating tag:', error)
+        console.error('addTagMutation: Database error:', error)
+        console.error('addTagMutation: Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
         throw error
       }
       
-      console.log('Tag created successfully:', data)
+      console.log('addTagMutation: Tag created successfully:', data)
       return data
     },
     onSuccess: () => {
+      console.log('addTagMutation: Success callback, invalidating queries')
       queryClient.invalidateQueries({ queryKey: ['tags'] })
       toast({
         title: "Etiqueta criada",
         description: "Nova etiqueta criada com sucesso!",
       })
     },
-    onError: (error) => {
-      console.error('Add tag mutation error:', error)
+    onError: (error: any) => {
+      console.error('addTagMutation: Error callback:', error)
       toast({
-        title: "Erro",
-        description: "Erro ao criar etiqueta: " + error.message,
+        title: "Erro ao criar etiqueta",
+        description: error.message || "Erro desconhecido ao criar etiqueta",
         variant: "destructive"
       })
     }
