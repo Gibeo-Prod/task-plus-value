@@ -19,6 +19,7 @@ export const useClients = (projects: Project[]) => {
         .from('clients')
         .select('*')
         .eq('user_id', user.id)
+        .eq('archived', false)
         .order('created_at', { ascending: false })
       
       if (error) throw error
@@ -59,9 +60,53 @@ export const useClients = (projects: Project[]) => {
     }
   })
 
+  const archiveClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      if (!user) throw new Error('User not authenticated')
+      
+      const { error } = await supabase
+        .from('clients')
+        .update({ archived: true })
+        .eq('id', clientId)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast({
+        title: "Cliente arquivado",
+        description: "Cliente foi arquivado com sucesso!",
+      })
+    }
+  })
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      if (!user) throw new Error('User not authenticated')
+      
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientId)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast({
+        title: "Cliente excluído",
+        description: "Cliente foi excluído permanentemente!",
+      })
+    }
+  })
+
   return {
     clients,
     clientsLoading,
-    addClient: addClientMutation.mutate
+    addClient: addClientMutation.mutate,
+    archiveClient: archiveClientMutation.mutate,
+    deleteClient: deleteClientMutation.mutate
   }
 }

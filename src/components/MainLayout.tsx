@@ -43,6 +43,8 @@ interface MainLayoutProps {
     startDate?: string
     dueDate?: string
   }) => void
+  onArchiveClient: (clientId: string) => void
+  onDeleteClient: (clientId: string) => void
   
   // Navigation
   onViewChange: (view: string) => void
@@ -68,6 +70,8 @@ export function MainLayout({
   onAddTag,
   onAddClient,
   onAddProject,
+  onArchiveClient,
+  onDeleteClient,
   onViewChange,
   onProjectClick,
   onBackToClient,
@@ -95,6 +99,8 @@ export function MainLayout({
           onViewChange={onViewChange}
           clients={clients}
           onAddClient={onAddClient}
+          onArchiveClient={onArchiveClient}
+          onDeleteClient={onDeleteClient}
         />
         <main className="flex-1 flex flex-col">
           <TopBar

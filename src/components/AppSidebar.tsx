@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { ClientActions } from "@/components/ClientActions"
 
 interface Client {
   id: string
@@ -38,9 +39,18 @@ interface AppSidebarProps {
   onViewChange: (view: string) => void
   clients: Client[]
   onAddClient: (name: string, email: string, company?: string) => void
+  onArchiveClient: (clientId: string) => void
+  onDeleteClient: (clientId: string) => void
 }
 
-export function AppSidebar({ selectedView, onViewChange, clients, onAddClient }: AppSidebarProps) {
+export function AppSidebar({ 
+  selectedView, 
+  onViewChange, 
+  clients, 
+  onAddClient,
+  onArchiveClient,
+  onDeleteClient 
+}: AppSidebarProps) {
   const [isAddingClient, setIsAddingClient] = useState(false)
   const [newClientName, setNewClientName] = useState("")
   const [newClientEmail, setNewClientEmail] = useState("")
@@ -249,6 +259,12 @@ export function AppSidebar({ selectedView, onViewChange, clients, onAddClient }:
                           {client.projects}
                         </span>
                       )}
+                      <ClientActions
+                        clientId={client.id}
+                        clientName={client.name}
+                        onArchive={onArchiveClient}
+                        onDelete={onDeleteClient}
+                      />
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

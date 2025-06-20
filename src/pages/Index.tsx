@@ -21,6 +21,14 @@ const Index = () => {
     appState.setSelectedProject(null)
   }
 
+  const handleArchiveClient = (clientId: string) => {
+    appState.archiveClient(clientId)
+  }
+
+  const handleDeleteClient = (clientId: string) => {
+    appState.deleteClient(clientId)
+  }
+
   return (
     <MainLayout
       // State
@@ -42,6 +50,8 @@ const Index = () => {
       onAddTag={appActions.addTag}
       onAddClient={appActions.addClient}
       onAddProject={appActions.addProject}
+      onArchiveClient={handleArchiveClient}
+      onDeleteClient={handleDeleteClient}
       
       // Navigation
       onViewChange={handleViewChange}

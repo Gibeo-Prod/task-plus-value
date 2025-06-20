@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       clients: {
         Row: {
+          archived: boolean | null
           avatar_url: string | null
           company: string | null
           created_at: string
@@ -22,6 +23,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean | null
           avatar_url?: string | null
           company?: string | null
           created_at?: string
@@ -33,6 +35,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean | null
           avatar_url?: string | null
           company?: string | null
           created_at?: string
