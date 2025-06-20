@@ -1,4 +1,3 @@
-
 export interface Task {
   id: string
   title: string
@@ -13,6 +12,9 @@ export interface Task {
   assignedTo?: string
   tags?: TaskTag[]
   userId: string
+  reminderDate?: string
+  notes?: string
+  text?: string
 }
 
 export interface TaskCategory {

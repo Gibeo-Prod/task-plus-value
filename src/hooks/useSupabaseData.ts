@@ -33,12 +33,15 @@ export const useSupabaseData = () => {
         important: task.priority === 'high',
         dueDate: task.due_date,
         projectId: task.project_id,
-        categoryId: task.category_id,
+        categoryId: null, // Not available in new structure
         priority: task.priority as 'low' | 'medium' | 'high',
         status: task.status,
         assignedTo: task.assigned_to,
         tags: [],
-        userId: task.user_id
+        userId: task.user_id,
+        reminderDate: undefined, // Not available in new structure
+        notes: task.description, // Map description to notes for backward compatibility
+        text: task.title // Map title to text for backward compatibility
       })) as Task[]
     },
     enabled: !!user

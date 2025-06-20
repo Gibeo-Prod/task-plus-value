@@ -39,7 +39,7 @@ export function TaskDetailsSheet({
   onUpdateTask, 
   onDeleteTask 
 }: TaskDetailsSheetProps) {
-  const [notes, setNotes] = useState(task?.notes || "")
+  const [notes, setNotes] = useState(task?.description || "")
   const [showSubtaskInput, setShowSubtaskInput] = useState(false)
   const [newSubtask, setNewSubtask] = useState("")
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -80,7 +80,7 @@ export function TaskDetailsSheet({
 
   const handleNotesChange = (value: string) => {
     setNotes(value)
-    onUpdateTask(task.id, { notes: value })
+    onUpdateTask(task.id, { description: value })
   }
 
   const handleSubtaskToggle = (index: number) => {
@@ -97,7 +97,7 @@ export function TaskDetailsSheet({
       : otherNotes
     
     setNotes(updatedNotes)
-    onUpdateTask(task.id, { notes: updatedNotes })
+    onUpdateTask(task.id, { description: updatedNotes })
   }
 
   const handleDeleteTask = () => {
@@ -119,11 +119,11 @@ export function TaskDetailsSheet({
   }
 
   const handleSetReminder = (reminderDate: string) => {
-    onUpdateTask(task.id, { reminderDate })
-    setShowReminderPicker(false)
+    // Reminder functionality not available in current structure
     toast({
-      title: "Lembrete definido",
-      description: "Lembrete configurado com sucesso",
+      title: "Funcionalidade não disponível",
+      description: "Lembretes não estão disponíveis na estrutura atual",
+      variant: "destructive"
     })
   }
 
@@ -143,7 +143,7 @@ export function TaskDetailsSheet({
         ? `${newSubtaskLine}\n${notes}`
         : newSubtaskLine
       
-      onUpdateTask(task.id, { notes: updatedNotes })
+      onUpdateTask(task.id, { description: updatedNotes })
       setNotes(updatedNotes)
       setNewSubtask("")
       setShowSubtaskInput(false)
@@ -244,7 +244,7 @@ export function TaskDetailsSheet({
           <SheetHeader>
             <div className="flex items-center justify-between">
               <SheetTitle className="text-lg font-medium">
-                {task.text}
+                {task.title}
               </SheetTitle>
               <Button
                 variant="ghost"
@@ -358,11 +358,9 @@ export function TaskDetailsSheet({
                 >
                   <Clock className="w-4 h-4 mr-3" />
                   <span>Lembrar-me</span>
-                  {task.reminderDate && (
-                    <span className="ml-auto text-sm text-muted-foreground">
-                      {new Date(task.reminderDate).toLocaleDateString('pt-BR')}
-                    </span>
-                  )}
+                  <span className="ml-auto text-sm text-muted-foreground">
+                    Não disponível
+                  </span>
                 </Button>
               )}
 

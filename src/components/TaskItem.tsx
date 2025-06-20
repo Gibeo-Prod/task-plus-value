@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { Trash2, Star, Calendar, Bell, AlertCircle, ArrowUp, Minus, FileText, Tag, Folder } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -33,7 +32,7 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
   const PriorityIcon = priorityInfo.icon
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed
-  const hasReminder = task.reminderDate && new Date(task.reminderDate) > new Date()
+  const hasReminder = false // Reminder functionality not available in new structure
 
   const handleTaskClick = (e: React.MouseEvent) => {
     // Não abrir o painel se clicou em um botão ou checkbox
@@ -71,7 +70,7 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
                 task.completed && "line-through text-muted-foreground"
               )}
             >
-              {task.text}
+              {task.title}
             </div>
 
             <div className={cn(
@@ -129,14 +128,6 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
               </div>
             )}
 
-            {/* Reminder */}
-            {hasReminder && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Bell className="w-3 h-3" />
-                <span>{new Date(task.reminderDate!).toLocaleDateString('pt-BR')}</span>
-              </div>
-            )}
-
             {/* Tags */}
             {task.tags && task.tags.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap">
@@ -161,7 +152,7 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
           </div>
 
           {/* Expandable details */}
-          {(task.notes || (task.tags && task.tags.length > 2)) && (
+          {(task.description || (task.tags && task.tags.length > 2)) && (
             <Collapsible open={showDetails} onOpenChange={setShowDetails}>
               <CollapsibleTrigger asChild>
                 <Button 
@@ -176,9 +167,9 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
               </CollapsibleTrigger>
               
               <CollapsibleContent className="space-y-2 pt-2">
-                {task.notes && (
+                {task.description && (
                   <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                    {task.notes}
+                    {task.description}
                   </div>
                 )}
                 
