@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
@@ -162,16 +161,17 @@ export const useSupabaseData = () => {
     }) => {
       if (!user) throw new Error('User not authenticated')
       
+      console.log('Adding task with data:', taskData)
+      
       const { data, error } = await supabase
         .from('tasks')
         .insert({
           user_id: user.id,
           title: taskData.text,
-          description: taskData.notes,
-          due_date: taskData.dueDate,
-          category_id: taskData.categoryId,
+          description: taskData.notes || null,
+          due_date: taskData.dueDate || null,
           priority: taskData.priority || 'medium',
-          project_id: taskData.projectId,
+          project_id: taskData.projectId || null, // Explicitly set to null if undefined
           assigned_to: user.email || 'Usuário',
           status: 'Pendente',
           completed: false
@@ -179,7 +179,12 @@ export const useSupabaseData = () => {
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('Error creating task:', error)
+        throw error
+      }
+      
+      console.log('Task created successfully:', data)
       return data
     },
     onSuccess: () => {
@@ -190,6 +195,7 @@ export const useSupabaseData = () => {
       })
     },
     onError: (error) => {
+      console.error('Mutation error:', error)
       toast({
         title: "Erro",
         description: "Erro ao criar tarefa: " + error.message,

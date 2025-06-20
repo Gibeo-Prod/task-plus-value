@@ -19,6 +19,7 @@ interface TaskListProps {
     notes?: string
     reminderDate?: string
     tags?: TaskTag[]
+    projectId?: string
   }) => void
   onToggleTask: (id: string) => void
   onDeleteTask: (id: string) => void
@@ -30,6 +31,7 @@ interface TaskListProps {
   onAddTag: (name: string, color: string) => void
   showBackButton?: boolean
   onBack?: () => void
+  projectId?: string | null // Add projectId prop
 }
 
 export function TaskList({
@@ -47,6 +49,7 @@ export function TaskList({
   onAddTag,
   showBackButton = false,
   onBack,
+  projectId
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -118,6 +121,7 @@ export function TaskList({
         tags={tags}
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
+        projectId={projectId} // Pass projectId to TaskInput
       />
 
       <div className="space-y-4">

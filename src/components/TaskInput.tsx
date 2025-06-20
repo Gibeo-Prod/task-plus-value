@@ -19,12 +19,14 @@ interface TaskInputProps {
     notes?: string
     reminderDate?: string
     tags?: TaskTag[]
+    projectId?: string
   }) => void
   placeholder?: string
   categories: TaskCategory[]
   tags: TaskTag[]
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
+  projectId?: string | null // Add projectId prop
 }
 
 export function TaskInput({ 
@@ -33,7 +35,8 @@ export function TaskInput({
   categories,
   tags,
   onAddCategory,
-  onAddTag
+  onAddTag,
+  projectId
 }: TaskInputProps) {
   const [taskText, setTaskText] = useState("")
   const [dueDate, setDueDate] = useState("")
@@ -47,6 +50,7 @@ export function TaskInput({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (taskText.trim()) {
+      console.log('Submitting task with projectId:', projectId)
       onAddTask({
         text: taskText.trim(),
         dueDate: dueDate || undefined,
@@ -54,7 +58,8 @@ export function TaskInput({
         priority,
         notes: notes || undefined,
         reminderDate: reminderDate || undefined,
-        tags: selectedTags
+        tags: selectedTags,
+        projectId: projectId || undefined // Pass the projectId
       })
       
       // Reset form

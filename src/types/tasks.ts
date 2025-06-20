@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string
   title: string
@@ -5,7 +6,7 @@ export interface Task {
   completed: boolean
   important: boolean
   dueDate?: string
-  projectId?: string
+  projectId?: string | null // Explicitly allow null
   categoryId?: string
   priority?: 'low' | 'medium' | 'high'
   status: string
