@@ -1,4 +1,3 @@
-
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TopBar } from "@/components/TopBar"
@@ -115,7 +114,7 @@ export function MainLayout({
           selectedView={selectedView}
           onViewChange={onViewChange}
           clients={clients}
-          onAddClient={handleAddClientAdapter}
+          onAddClient={onAddClient}
           onArchiveClient={onArchiveClient}
           onDeleteClient={onDeleteClient}
         />

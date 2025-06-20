@@ -38,7 +38,15 @@ interface AppSidebarProps {
   selectedView: string
   onViewChange: (view: string) => void
   clients: Client[]
-  onAddClient: (name: string, email: string, company?: string) => void
+  onAddClient: (clientData: {
+    name: string
+    email: string
+    phone?: string
+    company?: string
+    contactPersonName?: string
+    contactPersonEmail?: string
+    contactPersonPhone?: string
+  }) => void
   onArchiveClient: (clientId: string) => void
   onDeleteClient: (clientId: string) => void
 }
@@ -54,7 +62,11 @@ export function AppSidebar({
   const [isAddingClient, setIsAddingClient] = useState(false)
   const [newClientName, setNewClientName] = useState("")
   const [newClientEmail, setNewClientEmail] = useState("")
+  const [newClientPhone, setNewClientPhone] = useState("")
   const [newClientCompany, setNewClientCompany] = useState("")
+  const [contactPersonName, setContactPersonName] = useState("")
+  const [contactPersonEmail, setContactPersonEmail] = useState("")
+  const [contactPersonPhone, setContactPersonPhone] = useState("")
   const { toast } = useToast()
 
   const defaultViews = [
@@ -86,15 +98,49 @@ export function AppSidebar({
 
   const handleAddClient = () => {
     if (newClientName.trim() && newClientEmail.trim()) {
-      onAddClient(newClientName.trim(), newClientEmail.trim(), newClientCompany.trim() || undefined)
+      onAddClient({
+        name: newClientName.trim(),
+        email: newClientEmail.trim(),
+        phone: newClientPhone.trim() || undefined,
+        company: newClientCompany.trim() || undefined,
+        contactPersonName: contactPersonName.trim() || undefined,
+        contactPersonEmail: contactPersonEmail.trim() || undefined,
+        contactPersonPhone: contactPersonPhone.trim() || undefined
+      })
+      
+      // Reset all form fields
       setNewClientName("")
       setNewClientEmail("")
+      setNewClientPhone("")
       setNewClientCompany("")
+      setContactPersonName("")
+      setContactPersonEmail("")
+      setContactPersonPhone("")
       setIsAddingClient(false)
+      
       toast({
         title: "Cliente criado",
         description: `Cliente "${newClientName.trim()}" criado com sucesso!`,
       })
+    }
+  }
+
+  const handleCancel = () => {
+    setIsAddingClient(false)
+    setNewClientName("")
+    setNewClientEmail("")
+    setNewClientPhone("")
+    setNewClientCompany("")
+    setContactPersonName("")
+    setContactPersonEmail("")
+    setContactPersonPhone("")
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddClient()
+    } else if (e.key === 'Escape') {
+      handleCancel()
     }
   }
 
@@ -156,75 +202,84 @@ export function AppSidebar({
               {isAddingClient && (
                 <SidebarMenuItem>
                   <div className="space-y-2 p-2">
+                    <div className="text-xs font-medium text-muted-foreground mb-2">
+                      Dados do Cliente
+                    </div>
                     <input
                       type="text"
-                      placeholder="Nome do cliente"
+                      placeholder="Nome do cliente*"
                       value={newClientName}
                       onChange={(e) => setNewClientName(e.target.value)}
                       className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleAddClient()
-                        } else if (e.key === 'Escape') {
-                          setIsAddingClient(false)
-                          setNewClientName("")
-                          setNewClientEmail("")
-                          setNewClientCompany("")
-                        }
-                      }}
+                      onKeyDown={handleKeyDown}
                       autoFocus
                     />
                     <input
                       type="email"
-                      placeholder="Email do cliente"
+                      placeholder="Email do cliente*"
                       value={newClientEmail}
                       onChange={(e) => setNewClientEmail(e.target.value)}
                       className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleAddClient()
-                        } else if (e.key === 'Escape') {
-                          setIsAddingClient(false)
-                          setNewClientName("")
-                          setNewClientEmail("")
-                          setNewClientCompany("")
-                        }
-                      }}
+                      onKeyDown={handleKeyDown}
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Telefone do cliente"
+                      value={newClientPhone}
+                      onChange={(e) => setNewClientPhone(e.target.value)}
+                      className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
+                      onKeyDown={handleKeyDown}
                     />
                     <input
                       type="text"
-                      placeholder="Empresa (opcional)"
+                      placeholder="Empresa"
                       value={newClientCompany}
                       onChange={(e) => setNewClientCompany(e.target.value)}
                       className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleAddClient()
-                        } else if (e.key === 'Escape') {
-                          setIsAddingClient(false)
-                          setNewClientName("")
-                          setNewClientEmail("")
-                          setNewClientCompany("")
-                        }
-                      }}
+                      onKeyDown={handleKeyDown}
                     />
-                    <div className="flex gap-2">
+                    
+                    <div className="text-xs font-medium text-muted-foreground mt-3 mb-2">
+                      Pessoa de Contato (Opcional)
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Nome da pessoa de contato"
+                      value={contactPersonName}
+                      onChange={(e) => setContactPersonName(e.target.value)}
+                      className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
+                      onKeyDown={handleKeyDown}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email da pessoa de contato"
+                      value={contactPersonEmail}
+                      onChange={(e) => setContactPersonEmail(e.target.value)}
+                      className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
+                      onKeyDown={handleKeyDown}
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Telefone da pessoa de contato"
+                      value={contactPersonPhone}
+                      onChange={(e) => setContactPersonPhone(e.target.value)}
+                      className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-ms-blue"
+                      onKeyDown={handleKeyDown}
+                    />
+                    
+                    <div className="flex gap-2 mt-3">
                       <Button
                         size="sm"
                         onClick={handleAddClient}
                         className="flex-1 bg-ms-blue hover:bg-ms-blue-dark text-white"
+                        disabled={!newClientName.trim() || !newClientEmail.trim()}
                       >
                         Adicionar
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          setIsAddingClient(false)
-                          setNewClientName("")
-                          setNewClientEmail("")
-                          setNewClientCompany("")
-                        }}
+                        onClick={handleCancel}
                         className="flex-1"
                       >
                         Cancelar
