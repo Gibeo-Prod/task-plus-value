@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -73,15 +72,13 @@ export const useTasks = () => {
       
       console.log('addTaskMutation: Database task object:', dbTask)
       
-      // Test auth.uid() first
-      const { data: authTest, error: authError } = await supabase
-        .rpc('auth.uid')
-        .single()
+      // Test authentication by getting current session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
       
-      if (authError) {
-        console.error('addTaskMutation: Auth test failed:', authError)
+      if (sessionError) {
+        console.error('addTaskMutation: Session error:', sessionError)
       } else {
-        console.log('addTaskMutation: Auth UID test result:', authTest)
+        console.log('addTaskMutation: Session check - user ID:', sessionData.session?.user?.id)
       }
       
       // Insert task
