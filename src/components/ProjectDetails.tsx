@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { ArrowLeft, MessageSquare, Plus, Calendar, DollarSign, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -32,8 +31,6 @@ interface ProjectDetailsProps {
   onAddTag: (name: string, color: string) => void
 }
 
-type ActiveTab = 'tasks' | 'chat'
-
 export function ProjectDetails({
   project,
   tasks,
@@ -48,7 +45,7 @@ export function ProjectDetails({
   onAddCategory,
   onAddTag,
 }: ProjectDetailsProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('tasks')
+  const [activeTab, setActiveTab] = useState<'tasks' | 'chat'>('tasks')
 
   const getStatusColor = (status: string) => {
     switch (status) {
