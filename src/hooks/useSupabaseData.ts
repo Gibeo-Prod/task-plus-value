@@ -5,7 +5,15 @@ import { useClients } from './useClients'
 import { useCategoriesAndTags } from './useCategoriesAndTags'
 
 export const useSupabaseData = () => {
-  const { tasks, tasksLoading, addTask } = useTasks()
+  const { 
+    tasks, 
+    tasksLoading, 
+    addTask,
+    toggleTask,
+    deleteTask,
+    toggleImportant,
+    updateTask
+  } = useTasks()
   const { projects, projectsLoading, addProject } = useProjects()
   const { clients, clientsLoading, addClient } = useClients(projects)
   const { categories, categoriesLoading, tags, tagsLoading } = useCategoriesAndTags()
@@ -21,6 +29,10 @@ export const useSupabaseData = () => {
     loading,
     addTask,
     addClient,
-    addProject
+    addProject,
+    toggleTask,
+    deleteTask,
+    toggleImportant,
+    updateTask
   }
 }

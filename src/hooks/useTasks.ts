@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { Task, TaskTag } from '@/types/tasks'
-import { mapTaskFromSupabase } from '@/utils/supabaseDataMappers'
+import { mapTaskFromSupabase, mapStatusToDb } from '@/utils/supabaseDataMappers'
 
 export const useTasks = () => {
   const { user } = useAuth()
@@ -53,7 +53,7 @@ export const useTasks = () => {
           priority: taskData.priority || 'medium',
           project_id: taskData.projectId || null,
           assigned_to: user.email || 'Usuário',
-          status: 'Pendente',
+          status: 'new', // Use database-compatible status
           completed: false
         })
         .select()
@@ -84,9 +84,96 @@ export const useTasks = () => {
     }
   })
 
+  const toggleTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const task = tasks.find(t => t.id === taskId)
+      if (!task) throw new Error('Task not found')
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          completed: !task.completed,
+          status: !task.completed ? 'completed' : 'new'
+        })
+        .eq('id', taskId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    }
+  })
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      toast({
+        title: "Tarefa removida",
+        description: "Tarefa deletada com sucesso!",
+      })
+    }
+  })
+
+  const toggleImportantMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const task = tasks.find(t => t.id === taskId)
+      if (!task) throw new Error('Task not found')
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          priority: task.important ? 'medium' : 'high'
+        })
+        .eq('id', taskId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    }
+  })
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, updates }: { taskId: string, updates: Partial<Task> }) => {
+      const dbUpdates: any = {}
+      
+      if (updates.title) dbUpdates.title = updates.title
+      if (updates.description !== undefined) dbUpdates.description = updates.description
+      if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate
+      if (updates.priority) dbUpdates.priority = updates.priority
+      if (updates.completed !== undefined) {
+        dbUpdates.completed = updates.completed
+        dbUpdates.status = updates.completed ? 'completed' : 'new'
+      }
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update(dbUpdates)
+        .eq('id', taskId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    }
+  })
+
   return {
     tasks,
     tasksLoading,
-    addTask: addTaskMutation.mutate
+    addTask: addTaskMutation.mutate,
+    toggleTask: toggleTaskMutation.mutate,
+    deleteTask: deleteTaskMutation.mutate,
+    toggleImportant: toggleImportantMutation.mutate,
+    updateTask: (taskId: string, updates: Partial<Task>) => 
+      updateTaskMutation.mutate({ taskId, updates })
   }
 }
