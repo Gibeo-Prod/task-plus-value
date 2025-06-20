@@ -5,43 +5,34 @@ import { useClients } from './useClients'
 import { useCategoriesAndTags } from './useCategoriesAndTags'
 
 export const useSupabaseData = () => {
-  const { 
-    tasks, 
-    tasksLoading, 
-    addTask,
-    toggleTask,
-    deleteTask,
-    toggleImportant,
-    updateTask
-  } = useTasks()
-  const { projects, projectsLoading, addProject } = useProjects()
-  const { clients, clientsLoading, addClient } = useClients(projects)
-  const { 
-    categories, 
-    categoriesLoading, 
-    tags, 
-    tagsLoading,
-    addCategory,
-    addTag 
-  } = useCategoriesAndTags()
+  // Call hooks in a consistent order
+  const tasksData = useTasks()
+  const projectsData = useProjects()
+  const categoriesAndTagsData = useCategoriesAndTags()
+  // Call useClients last as it depends on projects
+  const clientsData = useClients(projectsData.projects)
 
-  const loading = tasksLoading || clientsLoading || projectsLoading || categoriesLoading || tagsLoading
+  const loading = tasksData.tasksLoading || 
+                 clientsData.clientsLoading || 
+                 projectsData.projectsLoading || 
+                 categoriesAndTagsData.categoriesLoading || 
+                 categoriesAndTagsData.tagsLoading
 
   return {
-    tasks,
-    clients,
-    projects,
-    categories,
-    tags,
+    tasks: tasksData.tasks,
+    clients: clientsData.clients,
+    projects: projectsData.projects,
+    categories: categoriesAndTagsData.categories,
+    tags: categoriesAndTagsData.tags,
     loading,
-    addTask,
-    addClient,
-    addProject,
-    addCategory,
-    addTag,
-    toggleTask,
-    deleteTask,
-    toggleImportant,
-    updateTask
+    addTask: tasksData.addTask,
+    addClient: clientsData.addClient,
+    addProject: projectsData.addProject,
+    addCategory: categoriesAndTagsData.addCategory,
+    addTag: categoriesAndTagsData.addTag,
+    toggleTask: tasksData.toggleTask,
+    deleteTask: tasksData.deleteTask,
+    toggleImportant: tasksData.toggleImportant,
+    updateTask: tasksData.updateTask
   }
 }

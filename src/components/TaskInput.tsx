@@ -26,7 +26,7 @@ interface TaskInputProps {
   tags: TaskTag[]
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
-  projectId?: string | null // Add projectId prop
+  projectId?: string | null
 }
 
 export function TaskInput({ 
@@ -50,8 +50,7 @@ export function TaskInput({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (taskText.trim()) {
-      console.log('Submitting task with projectId:', projectId)
-      onAddTask({
+      const taskData = {
         text: taskText.trim(),
         dueDate: dueDate || undefined,
         categoryId,
@@ -59,8 +58,11 @@ export function TaskInput({
         notes: notes || undefined,
         reminderDate: reminderDate || undefined,
         tags: selectedTags,
-        projectId: projectId || undefined // Pass the projectId
-      })
+        projectId: projectId || undefined
+      }
+      
+      console.log('TaskInput submitting task:', taskData)
+      onAddTask(taskData)
       
       // Reset form
       setTaskText("")
@@ -73,6 +75,13 @@ export function TaskInput({
       setShowAdvanced(false)
     }
   }
+
+  console.log('TaskInput props:', { 
+    categoriesCount: categories.length, 
+    tagsCount: tags.length,
+    projectId,
+    onAddTask: typeof onAddTask
+  })
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-background">

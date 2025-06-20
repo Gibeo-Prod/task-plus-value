@@ -15,14 +15,20 @@ export const useCategoriesAndTags = () => {
     queryKey: ['categories', user?.id],
     queryFn: async () => {
       if (!user) return []
+      console.log('Fetching categories for user:', user.id)
+      
       const { data, error } = await supabase
         .from('task_categories')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching categories:', error)
+        throw error
+      }
       
+      console.log('Categories fetched:', data)
       return data.map(mapCategoryFromSupabase) as TaskCategory[]
     },
     enabled: !!user
@@ -32,14 +38,20 @@ export const useCategoriesAndTags = () => {
     queryKey: ['tags', user?.id],
     queryFn: async () => {
       if (!user) return []
+      console.log('Fetching tags for user:', user.id)
+      
       const { data, error } = await supabase
         .from('task_tags')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching tags:', error)
+        throw error
+      }
       
+      console.log('Tags fetched:', data)
       return data.map(mapTagFromSupabase) as TaskTag[]
     },
     enabled: !!user
@@ -49,18 +61,25 @@ export const useCategoriesAndTags = () => {
     mutationFn: async ({ name, color, icon }: { name: string, color: string, icon: string }) => {
       if (!user) throw new Error('User not authenticated')
       
+      console.log('Adding category:', { name, color, icon, user_id: user.id })
+      
       const { data, error } = await supabase
         .from('task_categories')
         .insert({
           user_id: user.id,
           name: name,
           color: color,
-          icon: icon
+          icon: icon || 'folder'
         })
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('Error creating category:', error)
+        throw error
+      }
+      
+      console.log('Category created successfully:', data)
       return data
     },
     onSuccess: () => {
@@ -71,6 +90,7 @@ export const useCategoriesAndTags = () => {
       })
     },
     onError: (error) => {
+      console.error('Add category mutation error:', error)
       toast({
         title: "Erro",
         description: "Erro ao criar categoria: " + error.message,
@@ -83,6 +103,8 @@ export const useCategoriesAndTags = () => {
     mutationFn: async ({ name, color }: { name: string, color: string }) => {
       if (!user) throw new Error('User not authenticated')
       
+      console.log('Adding tag:', { name, color, user_id: user.id })
+      
       const { data, error } = await supabase
         .from('task_tags')
         .insert({
@@ -93,7 +115,12 @@ export const useCategoriesAndTags = () => {
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('Error creating tag:', error)
+        throw error
+      }
+      
+      console.log('Tag created successfully:', data)
       return data
     },
     onSuccess: () => {
@@ -104,6 +131,7 @@ export const useCategoriesAndTags = () => {
       })
     },
     onError: (error) => {
+      console.error('Add tag mutation error:', error)
       toast({
         title: "Erro",
         description: "Erro ao criar etiqueta: " + error.message,

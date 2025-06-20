@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { Task, TaskTag } from '@/types/tasks'
-import { mapTaskFromSupabase, mapStatusToDb } from '@/utils/supabaseDataMappers'
+import { mapTaskFromSupabase } from '@/utils/supabaseDataMappers'
 
 export const useTasks = () => {
   const { user } = useAuth()
@@ -15,14 +15,20 @@ export const useTasks = () => {
     queryKey: ['tasks', user?.id],
     queryFn: async () => {
       if (!user) return []
+      console.log('Fetching tasks for user:', user.id)
+      
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching tasks:', error)
+        throw error
+      }
       
+      console.log('Tasks fetched:', data)
       return data.map(mapTaskFromSupabase) as Task[]
     },
     enabled: !!user
@@ -43,23 +49,24 @@ export const useTasks = () => {
       
       console.log('Adding task with data:', taskData)
       
-      // Ensure we have valid status and priority values
-      const priority = taskData.priority || 'medium'
-      const status = 'new' // Always start with 'new' status
+      // Use valid database values
+      const dbTask = {
+        user_id: user.id,
+        title: taskData.text,
+        description: taskData.notes || null,
+        due_date: taskData.dueDate || null,
+        priority: taskData.priority || 'medium',
+        project_id: taskData.projectId || null,
+        assigned_to: user.email || 'Usuário',
+        status: 'new', // Use database enum value
+        completed: false
+      }
+      
+      console.log('Database task object:', dbTask)
       
       const { data, error } = await supabase
         .from('tasks')
-        .insert({
-          user_id: user.id,
-          title: taskData.text,
-          description: taskData.notes || null,
-          due_date: taskData.dueDate || null,
-          priority: priority,
-          project_id: taskData.projectId || null,
-          assigned_to: user.email || 'Usuário',
-          status: status,
-          completed: false
-        })
+        .insert(dbTask)
         .select()
         .single()
       
@@ -79,7 +86,7 @@ export const useTasks = () => {
       })
     },
     onError: (error) => {
-      console.error('Mutation error:', error)
+      console.error('Add task mutation error:', error)
       toast({
         title: "Erro",
         description: "Erro ao criar tarefa: " + error.message,
@@ -161,9 +168,6 @@ export const useTasks = () => {
       if (updates.completed !== undefined) {
         dbUpdates.completed = updates.completed
         dbUpdates.status = updates.completed ? 'completed' : 'new'
-      }
-      if (updates.status) {
-        dbUpdates.status = mapStatusToDb(updates.status)
       }
       
       const { error } = await supabase
