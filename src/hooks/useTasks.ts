@@ -50,14 +50,11 @@ export const useTasks = () => {
       projectId?: string
     }) => {
       if (!user) {
-        console.error('addTaskMutation: User not authenticated')
         throw new Error('User not authenticated')
       }
       
-      console.log('addTaskMutation: Starting with data:', taskData)
-      console.log('addTaskMutation: User info:', { id: user.id, email: user.email })
+      console.log('Creating task with data:', taskData)
       
-      // Prepare database object with valid values
       const dbTask = {
         user_id: user.id,
         title: taskData.text.trim(),
@@ -70,18 +67,8 @@ export const useTasks = () => {
         completed: false
       }
       
-      console.log('addTaskMutation: Database task object:', dbTask)
+      console.log('Inserting task into database:', dbTask)
       
-      // Test authentication by getting current session
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError) {
-        console.error('addTaskMutation: Session error:', sessionError)
-      } else {
-        console.log('addTaskMutation: Session check - user ID:', sessionData.session?.user?.id)
-      }
-      
-      // Insert task
       const { data, error } = await supabase
         .from('tasks')
         .insert(dbTask)
@@ -89,21 +76,14 @@ export const useTasks = () => {
         .single()
       
       if (error) {
-        console.error('addTaskMutation: Database error:', error)
-        console.error('addTaskMutation: Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
+        console.error('Database error creating task:', error)
         throw error
       }
       
-      console.log('addTaskMutation: Task created successfully:', data)
+      console.log('Task created successfully:', data)
       return data
     },
-    onSuccess: (data) => {
-      console.log('addTaskMutation: Success callback, invalidating queries')
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       toast({
         title: "Tarefa adicionada",
@@ -111,7 +91,7 @@ export const useTasks = () => {
       })
     },
     onError: (error: any) => {
-      console.error('addTaskMutation: Error callback:', error)
+      console.error('Error creating task:', error)
       toast({
         title: "Erro ao criar tarefa",
         description: error.message || "Erro desconhecido ao criar tarefa",
