@@ -27,17 +27,18 @@ export const useSupabaseData = () => {
       // Transform Supabase data to app format
       return data.map(task => ({
         id: task.id,
-        text: task.activity,
-        completed: task.status === 'Concluído',
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
         important: task.priority === 'high',
-        dueDate: task.date,
-        projectId: task.project,
+        dueDate: task.due_date,
+        projectId: task.project_id,
         categoryId: task.category_id,
         priority: task.priority as 'low' | 'medium' | 'high',
-        notes: task.notes,
-        reminderDate: task.reminder_date,
+        status: task.status,
+        assignedTo: task.assigned_to,
         tags: [],
-        assignedTo: task.responsible
+        userId: task.user_id
       })) as Task[]
     },
     enabled: !!user
@@ -162,16 +163,15 @@ export const useSupabaseData = () => {
         .from('tasks')
         .insert({
           user_id: user.id,
-          activity: taskData.text,
-          date: taskData.dueDate || new Date().toISOString().split('T')[0],
+          title: taskData.text,
+          description: taskData.notes,
+          due_date: taskData.dueDate,
           category_id: taskData.categoryId,
           priority: taskData.priority || 'medium',
-          notes: taskData.notes,
-          reminder_date: taskData.reminderDate,
-          project: taskData.projectId,
-          responsible: user.email || 'Usuário',
+          project_id: taskData.projectId,
+          assigned_to: user.email || 'Usuário',
           status: 'Pendente',
-          project_value: 0
+          completed: false
         })
         .select()
         .single()

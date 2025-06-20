@@ -69,59 +69,6 @@ export type Database = {
         }
         Relationships: []
       }
-      project_tasks: {
-        Row: {
-          assigned_to: string | null
-          completed: boolean
-          created_at: string
-          description: string | null
-          due_date: string | null
-          id: string
-          priority: string
-          project_id: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          assigned_to?: string | null
-          completed?: boolean
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          priority: string
-          project_id: string
-          status: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          assigned_to?: string | null
-          completed?: boolean
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          priority?: string
-          project_id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_tasks_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       projects: {
         Row: {
           assigned_to: string | null
@@ -184,41 +131,6 @@ export type Database = {
           },
         ]
       }
-      subtasks: {
-        Row: {
-          created_at: string
-          id: string
-          is_completed: boolean
-          task_id: string
-          title: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_completed?: boolean
-          task_id: string
-          title: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_completed?: boolean
-          task_id?: string
-          title?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subtasks_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       task_categories: {
         Row: {
           color: string
@@ -245,68 +157,6 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      task_notes: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          task_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          task_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          task_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "task_notes_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      task_reminders: {
-        Row: {
-          created_at: string
-          id: string
-          is_sent: boolean
-          reminder_date: string
-          task_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_sent?: boolean
-          reminder_date: string
-          task_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_sent?: boolean
-          reminder_date?: string
-          task_id?: string
           user_id?: string
         }
         Relationships: []
@@ -388,54 +238,63 @@ export type Database = {
       }
       tasks: {
         Row: {
-          activity: string
-          category_id: string | null
+          assigned_to: string | null
+          completed: boolean
           created_at: string
-          date: string
+          description: string | null
+          due_date: string | null
           id: string
-          notes: string | null
-          priority: string | null
-          project: string
-          project_value: number
-          reminder_date: string | null
-          responsible: string
+          priority: string
+          project_id: string
           status: string
+          title: string
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
-          activity: string
-          category_id?: string | null
+          assigned_to?: string | null
+          completed?: boolean
           created_at?: string
-          date: string
+          description?: string | null
+          due_date?: string | null
           id?: string
-          notes?: string | null
-          priority?: string | null
-          project: string
-          project_value?: number
-          reminder_date?: string | null
-          responsible: string
+          priority: string
+          project_id: string
           status: string
+          title: string
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
-          activity?: string
-          category_id?: string | null
+          assigned_to?: string | null
+          completed?: boolean
           created_at?: string
-          date?: string
+          description?: string | null
+          due_date?: string | null
           id?: string
-          notes?: string | null
-          priority?: string | null
-          project?: string
-          project_value?: number
-          reminder_date?: string | null
-          responsible?: string
+          priority?: string
+          project_id?: string
           status?: string
+          title?: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -1,17 +1,18 @@
 
 export interface Task {
   id: string
-  text: string
+  title: string
+  description?: string
   completed: boolean
   important: boolean
   dueDate?: string
   projectId?: string
   categoryId?: string
   priority?: 'low' | 'medium' | 'high'
-  notes?: string
-  reminderDate?: string
-  tags?: TaskTag[]
+  status: string
   assignedTo?: string
+  tags?: TaskTag[]
+  userId: string
 }
 
 export interface TaskCategory {
@@ -27,14 +28,6 @@ export interface TaskTag {
   name: string
   color: string
   userId: string
-}
-
-export interface TaskReminder {
-  id: string
-  taskId: string
-  userId: string
-  reminderDate: string
-  isSent: boolean
 }
 
 export interface Client {

@@ -15,16 +15,18 @@ export const createTask = (
 ): Task => {
   return {
     id: Date.now().toString(),
-    text: data.text,
+    title: data.text,
+    description: data.notes,
     completed: false,
     important: false,
     dueDate: data.dueDate,
     categoryId: data.categoryId,
     priority: data.priority || 'medium',
-    notes: data.notes,
-    reminderDate: data.reminderDate,
+    status: 'Pendente',
+    assignedTo: 'Usuário',
     tags: data.tags || [],
     projectId: selectedProject?.id,
+    userId: "demo"
   }
 }
 

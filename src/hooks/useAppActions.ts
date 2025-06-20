@@ -1,6 +1,6 @@
 
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
-import { createTask, createCategory, createTag, createClient, createProject } from "@/utils/dataOperations"
+import { createCategory, createTag } from "@/utils/dataOperations"
 
 interface UseAppActionsProps {
   tasks: Task[]
