@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TaskList } from "@/components/TaskList"
-import { ProjectChat } from "@/components/ProjectChat"
+import { CollaborativeChat } from "@/components/CollaborativeChat"
 import { Project, Task, TaskCategory, TaskTag } from "@/types/tasks"
 
 interface ProjectDetailsProps {
@@ -99,7 +99,7 @@ export function ProjectDetails({
   }
 
   if (activeTab === 'chat') {
-    return <ProjectChat project={project} onBack={() => setActiveTab('tasks')} />
+    return <CollaborativeChat project={project} onBack={() => setActiveTab('tasks')} />
   }
 
   return (
@@ -131,7 +131,7 @@ export function ProjectDetails({
             className={activeTab === 'chat' ? 'bg-ms-blue hover:bg-ms-blue-dark' : ''}
           >
             <MessageSquare className="w-4 h-4 mr-2" />
-            Chat IA
+            Chat Colaborativo
           </Button>
         </div>
       </div>
