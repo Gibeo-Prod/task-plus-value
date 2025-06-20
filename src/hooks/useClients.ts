@@ -33,7 +33,11 @@ export const useClients = (projects: Project[]) => {
     mutationFn: async (clientData: {
       name: string
       email: string
+      phone?: string
       company?: string
+      contactPersonName?: string
+      contactPersonEmail?: string
+      contactPersonPhone?: string
     }) => {
       if (!user) throw new Error('User not authenticated')
       
@@ -43,7 +47,11 @@ export const useClients = (projects: Project[]) => {
           user_id: user.id,
           name: clientData.name,
           email: clientData.email,
-          company: clientData.company
+          phone: clientData.phone,
+          company: clientData.company,
+          contact_person_name: clientData.contactPersonName,
+          contact_person_email: clientData.contactPersonEmail,
+          contact_person_phone: clientData.contactPersonPhone
         })
         .select()
         .single()

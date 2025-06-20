@@ -206,6 +206,9 @@ export type Database = {
           archived: boolean | null
           avatar_url: string | null
           company: string | null
+          contact_person_email: string | null
+          contact_person_name: string | null
+          contact_person_phone: string | null
           created_at: string
           email: string
           id: string
@@ -218,6 +221,9 @@ export type Database = {
           archived?: boolean | null
           avatar_url?: string | null
           company?: string | null
+          contact_person_email?: string | null
+          contact_person_name?: string | null
+          contact_person_phone?: string | null
           created_at?: string
           email: string
           id?: string
@@ -230,6 +236,9 @@ export type Database = {
           archived?: boolean | null
           avatar_url?: string | null
           company?: string | null
+          contact_person_email?: string | null
+          contact_person_name?: string | null
+          contact_person_phone?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -329,6 +338,69 @@ export type Database = {
             foreignKeyName: "project_chats_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_invites: {
+        Row: {
+          client_id: string
+          contact_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          invited_by: string
+          project_id: string
+          recipient_email: string | null
+          recipient_name: string
+          recipient_phone: string
+          token: string
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          client_id: string
+          contact_type: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          project_id: string
+          recipient_email?: string | null
+          recipient_name: string
+          recipient_phone: string
+          token: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          contact_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          project_id?: string
+          recipient_email?: string | null
+          recipient_name?: string
+          recipient_phone?: string
+          token?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_project_invites_client_id"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_project_invites_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },

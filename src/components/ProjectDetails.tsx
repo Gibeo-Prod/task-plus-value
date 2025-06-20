@@ -1,14 +1,17 @@
+
 import { useState } from "react"
-import { ArrowLeft, MessageSquare, Plus, Calendar, DollarSign, Users } from "lucide-react"
+import { ArrowLeft, MessageSquare, Plus, Calendar, DollarSign, Users, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TaskList } from "@/components/TaskList"
 import { CollaborativeChat } from "@/components/CollaborativeChat"
-import { Project, Task, TaskCategory, TaskTag } from "@/types/tasks"
+import { WhatsAppInviteModal } from "@/components/WhatsAppInviteModal"
+import { Project, Task, TaskCategory, TaskTag, Client } from "@/types/tasks"
 
 interface ProjectDetailsProps {
   project: Project
+  client: Client
   tasks: Task[]
   categories: TaskCategory[]
   tags: TaskTag[]
@@ -33,6 +36,7 @@ interface ProjectDetailsProps {
 
 export function ProjectDetails({
   project,
+  client,
   tasks,
   categories,
   tags,
@@ -46,6 +50,7 @@ export function ProjectDetails({
   onAddTag,
 }: ProjectDetailsProps) {
   const [activeTab, setActiveTab] = useState<'tasks' | 'chat'>('tasks')
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -114,6 +119,14 @@ export function ProjectDetails({
         </div>
         
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowWhatsAppModal(true)}
+            className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-50"
+          >
+            <Phone className="w-4 h-4" />
+            Convidar WhatsApp
+          </Button>
           <Button
             variant={activeTab === 'tasks' ? 'default' : 'outline'}
             onClick={() => setActiveTab('tasks')}
@@ -205,6 +218,13 @@ export function ProjectDetails({
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
         projectId={project.id}
+      />
+
+      <WhatsAppInviteModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        project={project}
+        client={client}
       />
     </div>
   )

@@ -39,7 +39,10 @@ export const mapClientFromSupabase = (client: any, projects: Project[]): Client 
   email: client.email,
   phone: client.phone,
   company: client.company,
-  projects: projects.filter(project => project.clientId === client.id).length
+  projects: projects.filter(project => project.clientId === client.id).length,
+  contactPersonName: client.contact_person_name,
+  contactPersonEmail: client.contact_person_email,
+  contactPersonPhone: client.contact_person_phone
 })
 
 export const mapCategoryFromSupabase = (category: any): TaskCategory => ({

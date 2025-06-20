@@ -50,6 +50,9 @@ export interface Client {
   phone?: string
   company?: string
   projects: number
+  contactPersonName?: string
+  contactPersonEmail?: string
+  contactPersonPhone?: string
 }
 
 export interface Project {
@@ -63,4 +66,20 @@ export interface Project {
   status: string
   priority: 'low' | 'medium' | 'high'
   tasks: number
+}
+
+export interface ProjectInvite {
+  id: string
+  projectId: string
+  clientId: string
+  invitedBy: string
+  token: string
+  contactType: 'client' | 'contact_person'
+  recipientName: string
+  recipientPhone: string
+  recipientEmail?: string
+  expiresAt: string
+  usedAt?: string
+  createdAt: string
+  updatedAt: string
 }

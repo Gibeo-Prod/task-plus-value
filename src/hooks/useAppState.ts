@@ -29,6 +29,11 @@ export const useAppState = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const { toast } = useToast()
 
+  // Helper function to get client by ID
+  const getClientById = (clientId: string): Client | undefined => {
+    return clients.find(client => client.id === clientId)
+  }
+
   // Mock functions for compatibility - will be implemented later
   const setTasks = () => {}
   const setClients = () => {}
@@ -63,6 +68,7 @@ export const useAppState = () => {
     updateTask,
     archiveClient,
     deleteClient,
+    getClientById,
     toast
   }
 }
