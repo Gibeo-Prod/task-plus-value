@@ -1,4 +1,3 @@
-
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TopBar } from "@/components/TopBar"
@@ -33,7 +32,15 @@ interface MainLayoutProps {
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
-  onAddClient: (name: string, email: string, company?: string) => void
+  onAddClient: (clientData: {
+    name: string
+    email: string
+    phone?: string
+    company?: string
+    contactPersonName?: string
+    contactPersonEmail?: string
+    contactPersonPhone?: string
+  }) => void
   onAddProject: (clientId: string, projectData: {
     name: string
     description?: string

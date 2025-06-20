@@ -1,4 +1,3 @@
-
 import { Task, TaskCategory, TaskTag, Project } from "@/types/tasks"
 
 interface AppState {
@@ -28,7 +27,8 @@ interface AppState {
     contactPersonEmail?: string
     contactPersonPhone?: string
   }) => void
-  addProject: (clientId: string, projectData: {
+  addProject: (projectData: {
+    clientId: string
     name: string
     description?: string
     value: number
@@ -103,7 +103,7 @@ export const useAppActions = (appState: AppState) => {
   }) => {
     try {
       console.log('Adding project:', { clientId, projectData })
-      appState.addProject(clientId, projectData)
+      appState.addProject({ clientId, ...projectData })
     } catch (error) {
       console.error('Error adding project:', error)
       appState.toast({
