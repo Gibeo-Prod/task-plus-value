@@ -43,6 +43,10 @@ export const useTasks = () => {
       
       console.log('Adding task with data:', taskData)
       
+      // Ensure we have valid status and priority values
+      const priority = taskData.priority || 'medium'
+      const status = 'new' // Always start with 'new' status
+      
       const { data, error } = await supabase
         .from('tasks')
         .insert({
@@ -50,10 +54,10 @@ export const useTasks = () => {
           title: taskData.text,
           description: taskData.notes || null,
           due_date: taskData.dueDate || null,
-          priority: taskData.priority || 'medium',
+          priority: priority,
           project_id: taskData.projectId || null,
           assigned_to: user.email || 'Usuário',
-          status: 'new', // Use database-compatible status
+          status: status,
           completed: false
         })
         .select()
@@ -89,11 +93,14 @@ export const useTasks = () => {
       const task = tasks.find(t => t.id === taskId)
       if (!task) throw new Error('Task not found')
       
+      const newCompleted = !task.completed
+      const newStatus = newCompleted ? 'completed' : 'new'
+      
       const { error } = await supabase
         .from('tasks')
         .update({ 
-          completed: !task.completed,
-          status: !task.completed ? 'completed' : 'new'
+          completed: newCompleted,
+          status: newStatus
         })
         .eq('id', taskId)
       
@@ -127,10 +134,12 @@ export const useTasks = () => {
       const task = tasks.find(t => t.id === taskId)
       if (!task) throw new Error('Task not found')
       
+      const newPriority = task.important ? 'medium' : 'high'
+      
       const { error } = await supabase
         .from('tasks')
         .update({ 
-          priority: task.important ? 'medium' : 'high'
+          priority: newPriority
         })
         .eq('id', taskId)
       
@@ -152,6 +161,9 @@ export const useTasks = () => {
       if (updates.completed !== undefined) {
         dbUpdates.completed = updates.completed
         dbUpdates.status = updates.completed ? 'completed' : 'new'
+      }
+      if (updates.status) {
+        dbUpdates.status = mapStatusToDb(updates.status)
       }
       
       const { error } = await supabase

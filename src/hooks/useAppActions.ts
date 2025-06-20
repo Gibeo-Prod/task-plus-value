@@ -1,6 +1,5 @@
 
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
-import { createCategory, createTag } from "@/utils/dataOperations"
 
 interface UseAppActionsProps {
   tasks: Task[]
@@ -17,6 +16,12 @@ interface UseAppActionsProps {
   addTask: (data: any) => void
   addClient: (data: any) => void
   addProject: (data: any) => void
+  addCategory: (name: string, color: string, icon: string) => void
+  addTag: (name: string, color: string) => void
+  toggleTask: (id: string) => void
+  deleteTask: (id: string) => void
+  toggleImportant: (id: string) => void
+  updateTask: (taskId: string, updates: Partial<Task>) => void
   toast: any
 }
 
@@ -35,6 +40,12 @@ export const useAppActions = ({
   addTask,
   addClient,
   addProject,
+  addCategory,
+  addTag,
+  toggleTask,
+  deleteTask,
+  toggleImportant,
+  updateTask,
   toast
 }: UseAppActionsProps) => {
 
@@ -53,26 +64,6 @@ export const useAppActions = ({
     })
   }
 
-  const addCategory = (name: string, color: string, icon: string) => {
-    const newCategory = createCategory(name, color, icon)
-    setCategories(prev => [...prev, newCategory])
-    
-    toast({
-      title: "Categoria criada",
-      description: `Categoria "${name}" criada com sucesso!`,
-    })
-  }
-
-  const addTag = (name: string, color: string) => {
-    const newTag = createTag(name, color)
-    setTags(prev => [...prev, newTag])
-    
-    toast({
-      title: "Etiqueta criada",
-      description: `Etiqueta "${name}" criada com sucesso!`,
-    })
-  }
-
   const handleAddClient = (name: string, email: string, company?: string) => {
     addClient({ name, email, company })
   }
@@ -87,37 +78,6 @@ export const useAppActions = ({
     dueDate?: string
   }) => {
     addProject({ clientId, ...projectData })
-  }
-
-  const updateTask = (taskId: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId ? { ...task, ...updates } : task
-    ))
-  }
-
-  const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id === id) {
-        const updatedTask = { ...task, completed: !task.completed }
-        return updatedTask
-      }
-      return task
-    }))
-  }
-
-  const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(task => task.id !== id))
-
-    toast({
-      title: "Tarefa removida",
-      description: "Tarefa excluída com sucesso!",
-    })
-  }
-
-  const toggleImportant = (id: string) => {
-    setTasks(prev => prev.map(task => 
-      task.id === id ? { ...task, important: !task.important } : task
-    ))
   }
 
   return {

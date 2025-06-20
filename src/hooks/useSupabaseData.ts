@@ -16,7 +16,14 @@ export const useSupabaseData = () => {
   } = useTasks()
   const { projects, projectsLoading, addProject } = useProjects()
   const { clients, clientsLoading, addClient } = useClients(projects)
-  const { categories, categoriesLoading, tags, tagsLoading } = useCategoriesAndTags()
+  const { 
+    categories, 
+    categoriesLoading, 
+    tags, 
+    tagsLoading,
+    addCategory,
+    addTag 
+  } = useCategoriesAndTags()
 
   const loading = tasksLoading || clientsLoading || projectsLoading || categoriesLoading || tagsLoading
 
@@ -30,6 +37,8 @@ export const useSupabaseData = () => {
     addTask,
     addClient,
     addProject,
+    addCategory,
+    addTag,
     toggleTask,
     deleteTask,
     toggleImportant,
