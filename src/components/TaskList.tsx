@@ -31,7 +31,7 @@ interface TaskListProps {
   onAddTag: (name: string, color: string) => void
   showBackButton?: boolean
   onBack?: () => void
-  projectId?: string | null // Add projectId prop
+  projectId?: string | null
 }
 
 export function TaskList({
@@ -87,6 +87,23 @@ export function TaskList({
     setSelectedTask(null)
   }
 
+  const handleAddTask = (taskData: {
+    text: string
+    dueDate?: string
+    categoryId?: string
+    priority?: 'low' | 'medium' | 'high'
+    notes?: string
+    reminderDate?: string
+    tags?: TaskTag[]
+    projectId?: string
+  }) => {
+    // If we have a projectId prop, use it
+    if (projectId) {
+      taskData.projectId = projectId
+    }
+    onAddTask(taskData)
+  }
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="space-y-2">
@@ -116,12 +133,12 @@ export function TaskList({
       </div>
 
       <TaskInput 
-        onAddTask={onAddTask}
+        onAddTask={handleAddTask}
         categories={categories}
         tags={tags}
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
-        projectId={projectId} // Pass projectId to TaskInput
+        projectId={projectId}
       />
 
       <div className="space-y-4">

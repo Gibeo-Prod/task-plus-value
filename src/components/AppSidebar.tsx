@@ -228,11 +228,11 @@ export function AppSidebar({ selectedView, onViewChange, clients, onAddClient }:
                 <SidebarMenuItem key={client.id}>
                   <SidebarMenuButton 
                     asChild
-                    isActive={selectedView === client.id}
+                    isActive={selectedView === `client-${client.id}`}
                     className="w-full justify-start hover:bg-ms-blue-light transition-colors"
                   >
                     <button
-                      onClick={() => onViewChange(client.id)}
+                      onClick={() => onViewChange(`client-${client.id}`)}
                       className="flex items-center gap-3 p-2 text-left w-full"
                     >
                       <Users className="w-5 h-5" />

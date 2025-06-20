@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TaskList } from "@/components/TaskList"
 import { ProjectList } from "@/components/ProjectList"
+import { Breadcrumb } from "@/components/Breadcrumb"
 import { useAuth } from "@/contexts/AuthContext"
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
 import { getFilteredTasks, getViewTitle, getViewSubtitle } from "@/utils/dataOperations"
@@ -29,6 +30,7 @@ interface MainLayoutProps {
     notes?: string
     reminderDate?: string
     tags?: TaskTag[]
+    projectId?: string
   }) => void
   onToggleTask: (id: string) => void
   onDeleteTask: (id: string) => void
@@ -77,12 +79,32 @@ export function MainLayout({
 }: MainLayoutProps) {
   const { signOut, user } = useAuth()
   
-  const currentClient = selectedView.startsWith("client-") ? clients.find(c => c.id === selectedView) : null
+  // Check if we're viewing a client
+  const isClientView = selectedView.startsWith("client-")
+  const currentClientId = isClientView ? selectedView.replace("client-", "") : null
+  const currentClient = currentClientId ? clients.find(c => c.id === currentClientId) : null
   const clientProjects = currentClient ? projects.filter(p => p.clientId === currentClient.id) : []
   const filteredTasks = getFilteredTasks(tasks, selectedView, selectedProject)
 
   const handleSignOut = async () => {
     await signOut()
+  }
+
+  const handleAddTaskWithProject = (taskData: {
+    text: string
+    dueDate?: string
+    categoryId?: string
+    priority?: 'low' | 'medium' | 'high'
+    notes?: string
+    reminderDate?: string
+    tags?: TaskTag[]
+    projectId?: string
+  }) => {
+    // If we're in a project view, automatically assign the project ID
+    if (selectedProject) {
+      taskData.projectId = selectedProject.id
+    }
+    onAddTask(taskData)
   }
 
   if (loading) {
@@ -104,7 +126,7 @@ export function MainLayout({
           tasks={filteredTasks}
           title={getViewTitle(selectedView, selectedProject, clients)}
           subtitle={getViewSubtitle(selectedView, selectedProject, clients)}
-          onAddTask={onAddTask}
+          onAddTask={handleAddTaskWithProject}
           onToggleTask={onToggleTask}
           onDeleteTask={onDeleteTask}
           onToggleImportant={onToggleImportant}
@@ -115,6 +137,7 @@ export function MainLayout({
           onAddTag={onAddTag}
           showBackButton={true}
           onBack={onBackToClient}
+          projectId={selectedProject.id}
         />
       )
     }
@@ -137,7 +160,7 @@ export function MainLayout({
         tasks={filteredTasks}
         title={getViewTitle(selectedView, selectedProject, clients)}
         subtitle={getViewSubtitle(selectedView, selectedProject, clients)}
-        onAddTask={onAddTask}
+        onAddTask={handleAddTaskWithProject}
         onToggleTask={onToggleTask}
         onDeleteTask={onDeleteTask}
         onToggleImportant={onToggleImportant}
@@ -181,6 +204,17 @@ export function MainLayout({
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
+            </div>
+            
+            {/* Breadcrumb Navigation */}
+            <div className="px-4 pb-4">
+              <Breadcrumb
+                selectedView={selectedView}
+                selectedProject={selectedProject}
+                currentClient={currentClient}
+                onViewChange={onViewChange}
+                onBackToClient={onBackToClient}
+              />
             </div>
           </div>
           

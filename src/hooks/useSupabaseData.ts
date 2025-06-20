@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
@@ -46,32 +47,7 @@ export const useSupabaseData = () => {
     enabled: !!user
   })
 
-  // Fetch clients
-  const { data: clients = [], isLoading: clientsLoading } = useQuery({
-    queryKey: ['clients', user?.id],
-    queryFn: async () => {
-      if (!user) return []
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      
-      return data.map(client => ({
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        phone: client.phone,
-        company: client.company,
-        projects: 0 // Will be calculated separately
-      })) as Client[]
-    },
-    enabled: !!user
-  })
-
-  // Fetch projects
+  // Fetch projects first
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects', user?.id],
     queryFn: async () => {
@@ -98,6 +74,32 @@ export const useSupabaseData = () => {
       })) as Project[]
     },
     enabled: !!user
+  })
+
+  // Fetch clients and calculate project count
+  const { data: clients = [], isLoading: clientsLoading } = useQuery({
+    queryKey: ['clients', user?.id, projects],
+    queryFn: async () => {
+      if (!user) return []
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      
+      // Calculate project count for each client
+      return data.map(client => ({
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        company: client.company,
+        projects: projects.filter(project => project.clientId === client.id).length
+      })) as Client[]
+    },
+    enabled: !!user && projects !== undefined
   })
 
   // Fetch categories
@@ -171,7 +173,7 @@ export const useSupabaseData = () => {
           description: taskData.notes || null,
           due_date: taskData.dueDate || null,
           priority: taskData.priority || 'medium',
-          project_id: taskData.projectId || null, // Explicitly set to null if undefined
+          project_id: taskData.projectId || null,
           assigned_to: user.email || 'Usuário',
           status: 'Pendente',
           completed: false
@@ -273,6 +275,7 @@ export const useSupabaseData = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
       toast({
         title: "Projeto criado",
         description: "Novo projeto criado com sucesso!",
