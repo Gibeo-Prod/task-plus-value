@@ -33,6 +33,8 @@ interface ProjectDetailsProps {
   onAddTag: (name: string, color: string) => void
 }
 
+type TabType = 'tasks' | 'chat'
+
 export function ProjectDetails({
   project,
   client,
@@ -48,7 +50,7 @@ export function ProjectDetails({
   onAddCategory,
   onAddTag,
 }: ProjectDetailsProps) {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'chat'>('tasks')
+  const [activeTab, setActiveTab] = useState<TabType>('tasks')
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
 
   const getStatusColor = (status: string) => {
