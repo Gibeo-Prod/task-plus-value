@@ -1,3 +1,4 @@
+
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { TopBar } from "@/components/TopBar"
@@ -87,6 +88,15 @@ export function MainLayout({
   const currentClientId = isClientView ? selectedView.replace("client-", "") : null
   const currentClient = currentClientId ? clients.find(c => c.id === currentClientId) : null
 
+  // Adapter function to convert old client format to new format
+  const handleAddClientAdapter = (name: string, email: string, company?: string) => {
+    onAddClient({
+      name,
+      email,
+      company
+    })
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -105,7 +115,7 @@ export function MainLayout({
           selectedView={selectedView}
           onViewChange={onViewChange}
           clients={clients}
-          onAddClient={onAddClient}
+          onAddClient={handleAddClientAdapter}
           onArchiveClient={onArchiveClient}
           onDeleteClient={onDeleteClient}
         />
