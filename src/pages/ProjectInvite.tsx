@@ -172,7 +172,7 @@ const ProjectInvite = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2 text-muted-foreground">Carregando convite...</p>
@@ -183,15 +183,15 @@ const ProjectInvite = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <CardTitle className="text-red-600">Erro no Convite</CardTitle>
+          <CardHeader className="text-center p-4 sm:p-6">
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-red-500" />
+            <CardTitle className="text-red-600 text-lg sm:text-xl">Erro no Convite</CardTitle>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => navigate('/')} variant="outline">
+          <CardContent className="text-center p-4 sm:p-6 pt-0">
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">{error}</p>
+            <Button onClick={() => navigate('/')} variant="outline" className="w-full">
               Ir para Home
             </Button>
           </CardContent>
@@ -203,66 +203,66 @@ const ProjectInvite = () => {
   if (!invite) return null
 
   const isUsed = !!invite.used_at
-  const statusIcon = isUsed ? <CheckCircle className="w-6 h-6 text-green-600" /> : <Clock className="w-6 h-6 text-blue-600" />
+  const statusIcon = isUsed ? <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" /> : <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
   const statusText = isUsed ? "Convite já aceito" : "Convite ativo"
   const statusColor = isUsed ? "text-green-600" : "text-blue-600"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-4 sm:py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader className="text-center">
+        <Card className="shadow-lg">
+          <CardHeader className="text-center p-4 sm:p-6">
             <div className="flex items-center justify-center gap-2 mb-2">
               {statusIcon}
-              <span className={`font-medium ${statusColor}`}>{statusText}</span>
+              <span className={`font-medium text-sm sm:text-base ${statusColor}`}>{statusText}</span>
             </div>
-            <CardTitle className="text-2xl">Convite para Projeto</CardTitle>
-            <p className="text-muted-foreground">
+            <CardTitle className="text-xl sm:text-2xl mb-2">Convite para Projeto</CardTitle>
+            <p className="text-muted-foreground text-sm sm:text-base px-2">
               Olá {invite.recipient_name}! Você foi convidado(a) para acompanhar um projeto.
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
             {/* Project Info */}
-            <div className="border rounded-lg p-4 bg-muted/50">
-              <h3 className="font-semibold text-lg mb-2">{invite.project.name}</h3>
+            <div className="border rounded-lg p-3 sm:p-4 bg-muted/50">
+              <h3 className="font-semibold text-base sm:text-lg mb-2 break-words">{invite.project.name}</h3>
               {invite.project.description && (
-                <p className="text-muted-foreground mb-3">{invite.project.description}</p>
+                <p className="text-muted-foreground mb-3 text-sm sm:text-base break-words">{invite.project.description}</p>
               )}
               
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Valor:</span>
-                  <p>{formatCurrency(invite.project.value)}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                <div className="space-y-1">
+                  <span className="font-medium block">Valor:</span>
+                  <p className="text-green-600 font-semibold">{formatCurrency(invite.project.value)}</p>
                 </div>
-                <div>
-                  <span className="font-medium">Prioridade:</span>
+                <div className="space-y-1">
+                  <span className="font-medium block">Prioridade:</span>
                   <p className="capitalize">{invite.project.priority}</p>
                 </div>
-                <div>
-                  <span className="font-medium">Início:</span>
+                <div className="space-y-1">
+                  <span className="font-medium block">Início:</span>
                   <p>{formatDate(invite.project.start_date)}</p>
                 </div>
-                <div>
-                  <span className="font-medium">Prazo:</span>
-                  <p>{formatDate(invite.project.due_date)}</p>
+                <div className="space-y-1">
+                  <span className="font-medium block">Prazo:</span>
+                  <p className="text-orange-600 font-medium">{formatDate(invite.project.due_date)}</p>
                 </div>
               </div>
             </div>
 
             {/* Client Info */}
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-2">Cliente</h4>
-              <p className="font-semibold">{invite.client.name}</p>
+            <div className="border rounded-lg p-3 sm:p-4 bg-white">
+              <h4 className="font-medium mb-2 text-sm sm:text-base">Cliente</h4>
+              <p className="font-semibold text-sm sm:text-base break-words">{invite.client.name}</p>
               {invite.client.company && (
-                <p className="text-muted-foreground">{invite.client.company}</p>
+                <p className="text-muted-foreground text-sm break-words">{invite.client.company}</p>
               )}
             </div>
 
             {/* Actions */}
             <div className="flex flex-col gap-3">
               {!isUsed && (
-                <Button onClick={markAsUsed} className="w-full">
+                <Button onClick={markAsUsed} className="w-full h-11 sm:h-10 text-base sm:text-sm">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Aceitar Convite
                 </Button>
@@ -270,7 +270,7 @@ const ProjectInvite = () => {
               
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full h-11 sm:h-10 text-base sm:text-sm"
                 onClick={() => {
                   const whatsappUrl = `https://wa.me/5519996645698?text=Olá! Recebi o convite para o projeto "${invite.project.name}" e gostaria de conversar sobre ele.`
                   window.open(whatsappUrl, '_blank')
@@ -282,9 +282,9 @@ const ProjectInvite = () => {
             </div>
 
             {/* Invite Info */}
-            <div className="text-center text-sm text-muted-foreground border-t pt-4">
-              <p>Convite válido até: {formatDate(invite.expires_at)}</p>
-              <p>Tipo de contato: {invite.contact_type === 'client' ? 'Cliente' : 'Pessoa de contato'}</p>
+            <div className="text-center text-xs sm:text-sm text-muted-foreground border-t pt-3 sm:pt-4 space-y-1">
+              <p>Convite válido até: <span className="font-medium">{formatDate(invite.expires_at)}</span></p>
+              <p>Tipo: <span className="font-medium">{invite.contact_type === 'client' ? 'Cliente' : 'Pessoa de contato'}</span></p>
             </div>
           </CardContent>
         </Card>
