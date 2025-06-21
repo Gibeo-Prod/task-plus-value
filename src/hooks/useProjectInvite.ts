@@ -31,33 +31,44 @@ export const useProjectInvite = (token: string | undefined) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchInvite = async () => {
+    const fetchInviteWithRetry = async (retryCount = 0) => {
       if (!token) {
         setError("Token de convite inválido")
         setLoading(false)
         return
       }
 
-      console.log('Fetching invite with token:', token)
+      console.log('Fetching invite with token:', token, 'Attempt:', retryCount + 1)
 
       try {
-        // Primeiro, vamos buscar o convite básico para verificar se existe
+        // Usar maybeSingle() em vez de single() para evitar erro 406
         const { data: basicInvite, error: basicError } = await supabase
           .from('project_invites')
           .select('*')
           .eq('token', token)
-          .single()
+          .maybeSingle()
 
         console.log('Basic invite data:', basicInvite)
         console.log('Basic invite error:', basicError)
 
         if (basicError) {
           console.error('Error fetching basic invite:', basicError)
-          if (basicError.code === 'PGRST116') {
-            setError("Convite não encontrado")
-          } else {
-            setError("Erro ao carregar convite: " + basicError.message)
+          
+          // Se for erro de rede ou temporário, tentar novamente
+          if (retryCount < 2 && (basicError.code === 'PGRST301' || basicError.message.includes('network'))) {
+            console.log('Retrying in 1 second...')
+            setTimeout(() => fetchInviteWithRetry(retryCount + 1), 1000)
+            return
           }
+          
+          setError("Erro ao carregar convite: " + basicError.message)
+          setLoading(false)
+          return
+        }
+
+        // Se não encontrou nenhum convite
+        if (!basicInvite) {
+          setError("Convite não encontrado")
           setLoading(false)
           return
         }
@@ -77,12 +88,12 @@ export const useProjectInvite = (token: string | undefined) => {
             .from('projects')
             .select('name, description, value, status, priority, start_date, due_date')
             .eq('id', basicInvite.project_id)
-            .single(),
+            .maybeSingle(),
           supabase
             .from('clients')
             .select('name, company')
             .eq('id', basicInvite.client_id)
-            .single()
+            .maybeSingle()
         ])
 
         console.log('Project response:', projectResponse)
@@ -102,6 +113,18 @@ export const useProjectInvite = (token: string | undefined) => {
           return
         }
 
+        if (!projectResponse.data) {
+          setError("Projeto não encontrado")
+          setLoading(false)
+          return
+        }
+
+        if (!clientResponse.data) {
+          setError("Cliente não encontrado")
+          setLoading(false)
+          return
+        }
+
         // Construir o objeto de dados completo
         const completeInvite: ProjectInviteData = {
           id: basicInvite.id,
@@ -117,13 +140,21 @@ export const useProjectInvite = (token: string | undefined) => {
         setInvite(completeInvite)
       } catch (err) {
         console.error('Unexpected error:', err)
+        
+        // Tentar novamente se for erro temporário
+        if (retryCount < 2) {
+          console.log('Retrying due to unexpected error...')
+          setTimeout(() => fetchInviteWithRetry(retryCount + 1), 1000)
+          return
+        }
+        
         setError("Erro inesperado ao carregar convite")
       } finally {
         setLoading(false)
       }
     }
 
-    fetchInvite()
+    fetchInviteWithRetry()
   }, [token])
 
   const markAsUsed = async () => {
