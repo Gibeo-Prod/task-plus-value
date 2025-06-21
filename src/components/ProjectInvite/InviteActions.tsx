@@ -19,19 +19,19 @@ export function InviteActions({ isUsed, projectName, onAcceptInvite }: InviteAct
       {!isUsed && (
         <Button 
           onClick={onAcceptInvite} 
-          className="w-full h-12 sm:h-11 text-base sm:text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+          className="w-full h-11 sm:h-10 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
         >
-          <CheckCircle className="w-5 h-5 mr-2" />
+          <CheckCircle className="w-4 h-4 mr-2" />
           Aceitar Convite
         </Button>
       )}
       
       <Button 
         variant="outline" 
-        className="w-full h-12 sm:h-11 text-base sm:text-sm font-semibold border-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all"
+        className="w-full h-11 sm:h-10 text-sm font-semibold border-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all"
         onClick={handleWhatsAppClick}
       >
-        <MessageCircle className="w-5 h-5 mr-2" />
+        <MessageCircle className="w-4 h-4 mr-2" />
         Conversar sobre o Projeto
       </Button>
     </div>

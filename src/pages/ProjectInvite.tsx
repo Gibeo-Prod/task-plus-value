@@ -28,22 +28,21 @@ const ProjectInvite = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-2 sm:py-4 md:py-8 px-2 sm:px-4">
-      <div className="max-w-lg sm:max-w-xl lg:max-w-2xl mx-auto">
-        <Card className="shadow-lg border-0 sm:border">
+      <div className="max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+        <Card className="shadow-lg border-0 sm:border overflow-hidden">
           <CardHeader className="text-center p-3 sm:p-4 lg:p-6 space-y-2 sm:space-y-3">
             <InviteStatus isUsed={isUsed} />
-            <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold leading-tight">
+            <CardTitle className="text-base sm:text-lg lg:text-xl font-bold leading-tight px-2">
               Convite para Projeto
             </CardTitle>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed px-1 sm:px-2">
+            <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed px-2">
               Olá <span className="font-semibold text-foreground">{invite.recipient_name}</span>! 
-              <br className="sm:hidden" />
-              <span className="hidden sm:inline"> </span>
+              <br />
               Você foi convidado(a) para acompanhar um projeto.
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-3 sm:space-y-4 lg:space-y-6 p-3 sm:p-4 lg:p-6 pt-0">
+          <CardContent className="space-y-3 sm:space-y-4 lg:space-y-5 p-3 sm:p-4 lg:p-6 pt-0">
             <ProjectInfo project={invite.project} />
             <ClientInfo client={invite.client} />
             <InviteActions 
