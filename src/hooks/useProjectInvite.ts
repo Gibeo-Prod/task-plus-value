@@ -33,15 +33,27 @@ export const useProjectInvite = (token: string | undefined) => {
   useEffect(() => {
     const fetchInviteWithRetry = async (retryCount = 0) => {
       if (!token) {
+        console.log('No token provided')
         setError("Token de convite inválido")
         setLoading(false)
         return
       }
 
       console.log('Fetching invite with token:', token, 'Attempt:', retryCount + 1)
+      console.log('Token length:', token.length)
+      console.log('Token type:', typeof token)
 
       try {
-        // Primeira tentativa: buscar como array e pegar o primeiro
+        // Primeiro, vamos fazer uma busca geral para ver quantos convites existem
+        const { data: allInvites, error: countError } = await supabase
+          .from('project_invites')
+          .select('token')
+          .limit(5)
+
+        console.log('Total invites in database (sample):', allInvites?.length || 0)
+        console.log('Sample tokens:', allInvites?.map(inv => inv.token) || [])
+
+        // Agora buscar especificamente pelo token
         const { data: inviteArray, error: arrayError } = await supabase
           .from('project_invites')
           .select('*')
@@ -67,12 +79,22 @@ export const useProjectInvite = (token: string | undefined) => {
 
         // Verificar se encontrou o convite
         if (!inviteArray || inviteArray.length === 0) {
+          console.log('No invite found with token:', token)
+          // Tentar busca com LIKE para ver se há tokens similares
+          const { data: similarTokens } = await supabase
+            .from('project_invites')
+            .select('token')
+            .like('token', `%${token.substring(0, 8)}%`)
+            .limit(3)
+          
+          console.log('Similar tokens found:', similarTokens)
           setError("Convite não encontrado")
           setLoading(false)
           return
         }
 
         const basicInvite = inviteArray[0]
+        console.log('Found invite:', basicInvite)
 
         // Check if invite has expired
         const now = new Date()
