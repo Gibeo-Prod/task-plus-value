@@ -41,37 +41,38 @@ export const useProjectInvite = (token: string | undefined) => {
       console.log('Fetching invite with token:', token, 'Attempt:', retryCount + 1)
 
       try {
-        // Usar maybeSingle() em vez de single() para evitar erro 406
-        const { data: basicInvite, error: basicError } = await supabase
+        // Primeira tentativa: buscar como array e pegar o primeiro
+        const { data: inviteArray, error: arrayError } = await supabase
           .from('project_invites')
           .select('*')
           .eq('token', token)
-          .maybeSingle()
 
-        console.log('Basic invite data:', basicInvite)
-        console.log('Basic invite error:', basicError)
+        console.log('Invite array response:', inviteArray)
+        console.log('Array error:', arrayError)
 
-        if (basicError) {
-          console.error('Error fetching basic invite:', basicError)
+        if (arrayError) {
+          console.error('Error fetching invite array:', arrayError)
           
           // Se for erro de rede ou temporário, tentar novamente
-          if (retryCount < 2 && (basicError.code === 'PGRST301' || basicError.message.includes('network'))) {
+          if (retryCount < 2 && (arrayError.code === 'PGRST301' || arrayError.message.includes('network'))) {
             console.log('Retrying in 1 second...')
             setTimeout(() => fetchInviteWithRetry(retryCount + 1), 1000)
             return
           }
           
-          setError("Erro ao carregar convite: " + basicError.message)
+          setError("Erro ao carregar convite: " + arrayError.message)
           setLoading(false)
           return
         }
 
-        // Se não encontrou nenhum convite
-        if (!basicInvite) {
+        // Verificar se encontrou o convite
+        if (!inviteArray || inviteArray.length === 0) {
           setError("Convite não encontrado")
           setLoading(false)
           return
         }
+
+        const basicInvite = inviteArray[0]
 
         // Check if invite has expired
         const now = new Date()
@@ -82,18 +83,16 @@ export const useProjectInvite = (token: string | undefined) => {
           return
         }
 
-        // Agora vamos buscar os dados relacionados separadamente
+        // Agora vamos buscar os dados relacionados separadamente usando array
         const [projectResponse, clientResponse] = await Promise.all([
           supabase
             .from('projects')
             .select('name, description, value, status, priority, start_date, due_date')
-            .eq('id', basicInvite.project_id)
-            .maybeSingle(),
+            .eq('id', basicInvite.project_id),
           supabase
             .from('clients')
             .select('name, company')
             .eq('id', basicInvite.client_id)
-            .maybeSingle()
         ])
 
         console.log('Project response:', projectResponse)
@@ -113,13 +112,13 @@ export const useProjectInvite = (token: string | undefined) => {
           return
         }
 
-        if (!projectResponse.data) {
+        if (!projectResponse.data || projectResponse.data.length === 0) {
           setError("Projeto não encontrado")
           setLoading(false)
           return
         }
 
-        if (!clientResponse.data) {
+        if (!clientResponse.data || clientResponse.data.length === 0) {
           setError("Cliente não encontrado")
           setLoading(false)
           return
@@ -128,8 +127,8 @@ export const useProjectInvite = (token: string | undefined) => {
         // Construir o objeto de dados completo
         const completeInvite: ProjectInviteData = {
           id: basicInvite.id,
-          project: projectResponse.data,
-          client: clientResponse.data,
+          project: projectResponse.data[0],
+          client: clientResponse.data[0],
           recipient_name: basicInvite.recipient_name,
           contact_type: basicInvite.contact_type,
           expires_at: basicInvite.expires_at,
