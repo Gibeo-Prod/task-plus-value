@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ProjectInvite from "./pages/ProjectInvite";
+import ProjectView from "./pages/ProjectView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/projeto-convite/:token" element={<ProjectInvite />} />
+            <Route path="/projeto-visualizar/:token" element={<ProjectView />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />

@@ -49,6 +49,7 @@ const ProjectInvite = () => {
               isUsed={isUsed} 
               projectName={invite.project.name}
               onAcceptInvite={markAsUsed}
+              token={token}
             />
             <InviteDetails 
               expiresAt={invite.expires_at}
