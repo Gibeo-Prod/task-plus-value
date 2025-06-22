@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { ProjectInvite, Client, Project } from '@/types/tasks'
+import { generateShortToken } from '@/utils/tokenHandler'
 
 export const useProjectInvites = (projectId?: string) => {
   const { user } = useAuth()
@@ -54,8 +55,9 @@ export const useProjectInvites = (projectId?: string) => {
     }) => {
       if (!user) throw new Error('User not authenticated')
       
-      // Generate unique token
-      const token = crypto.randomUUID()
+      // Generate short token for easier sharing
+      const token = generateShortToken()
+      console.log('Generated token for new invite:', token)
       
       const { data, error } = await supabase
         .from('project_invites')

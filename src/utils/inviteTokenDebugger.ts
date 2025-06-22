@@ -1,64 +1,76 @@
 
 import { supabase } from "@/integrations/supabase/client"
+import { isValidTokenFormat, getTokenSearchPatterns } from "./tokenHandler"
 
 export const debugTokenSearch = async (token: string) => {
-  console.log('Fetching invite with token:', token)
+  console.log('=== TOKEN DEBUG START ===')
+  console.log('Input token:', token)
   console.log('Token length:', token.length)
   console.log('Token type:', typeof token)
+  console.log('Is valid format:', isValidTokenFormat(token))
+  
+  const patterns = getTokenSearchPatterns(token)
+  console.log('Search patterns:', patterns)
 
-  // Primeiro, vamos fazer uma busca geral para ver quantos convites existem
+  // Fetch sample invites to compare
   const { data: allInvites, error: countError } = await supabase
     .from('project_invites')
     .select('token, id, recipient_name, created_at')
     .limit(10)
 
   console.log('Total invites in database (sample):', allInvites?.length || 0)
-  console.log('All invite details:', allInvites)
   
   if (allInvites && allInvites.length > 0) {
-    console.log('Exact token comparison:')
+    console.log('Token format analysis:')
     allInvites.forEach((inv, index) => {
-      const matches = inv.token === token
-      console.log(`${index + 1}. DB Token: "${inv.token}" (length: ${inv.token?.length || 0}) | Matches: ${matches}`)
-      if (inv.token && token) {
-        // Check character by character for debugging
-        let diffFound = false
-        for (let i = 0; i < Math.max(inv.token.length, token.length); i++) {
-          if (inv.token[i] !== token[i]) {
-            console.log(`   Diff at position ${i}: DB="${inv.token[i] || 'undefined'}" vs Input="${token[i] || 'undefined'}"`)
-            diffFound = true
+      const dbToken = inv.token
+      const exactMatch = dbToken === token
+      const caseInsensitiveMatch = dbToken?.toLowerCase() === token.toLowerCase()
+      
+      console.log(`${index + 1}. DB Token: "${dbToken}"`)
+      console.log(`   Length: ${dbToken?.length || 0}`)
+      console.log(`   Format: ${dbToken?.includes('-') ? 'UUID' : 'Short'}`)
+      console.log(`   Exact match: ${exactMatch}`)
+      console.log(`   Case-insensitive match: ${caseInsensitiveMatch}`)
+      
+      if (dbToken && token && !exactMatch && dbToken.length === token.length) {
+        // Character by character comparison for debugging
+        for (let i = 0; i < Math.min(dbToken.length, token.length); i++) {
+          if (dbToken[i] !== token[i]) {
+            console.log(`   First difference at position ${i}: DB="${dbToken[i]}" vs Input="${token[i]}"`)
             break
           }
-        }
-        if (!diffFound && inv.token.length === token.length) {
-          console.log('   Tokens are identical character by character')
         }
       }
     })
   }
 
+  console.log('=== TOKEN DEBUG END ===')
   return { allInvites, countError }
 }
 
 export const searchSimilarTokens = async (token: string) => {
-  console.log('Trying alternative query approaches...')
+  console.log('Searching for similar tokens...')
   
-  // Try with ilike (case insensitive)
+  // Try case-insensitive search
   const { data: ilikeResult } = await supabase
     .from('project_invites')
-    .select('token, id')
+    .select('token, id, recipient_name')
     .ilike('token', token)
   
   console.log('Case-insensitive search result:', ilikeResult)
   
-  // Try to find partial matches
-  const { data: similarTokens } = await supabase
-    .from('project_invites')
-    .select('token, id, recipient_name')
-    .or(`token.like.%${token.substring(0, 8)}%,token.like.%${token.substring(-8)}%`)
-    .limit(5)
+  // Try partial matches for debugging
+  if (token.length >= 8) {
+    const { data: similarTokens } = await supabase
+      .from('project_invites')
+      .select('token, id, recipient_name')
+      .or(`token.like.%${token.substring(0, 8)}%,token.like.%${token.substring(-8)}%`)
+      .limit(5)
+    
+    console.log('Partial match results:', similarTokens)
+    return { ilikeResult, similarTokens }
+  }
   
-  console.log('Similar tokens found:', similarTokens)
-  
-  return { ilikeResult, similarTokens }
+  return { ilikeResult, similarTokens: [] }
 }

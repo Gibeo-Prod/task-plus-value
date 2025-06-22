@@ -1,15 +1,42 @@
 
 import { supabase } from "@/integrations/supabase/client"
 import { ProjectInviteData } from "@/types/projectInvite"
+import { getTokenSearchPatterns } from "./tokenHandler"
 
 export const fetchInviteByToken = async (token: string) => {
+  console.log('Searching for invite with token:', token)
+  
+  const searchPatterns = getTokenSearchPatterns(token)
+  console.log('Token search patterns:', searchPatterns)
+
+  // Try exact match first
   const { data: inviteArray, error: arrayError } = await supabase
     .from('project_invites')
     .select('*')
-    .eq('token', token)
+    .eq('token', searchPatterns.exact)
 
-  console.log('Invite array response:', inviteArray)
-  console.log('Array error:', arrayError)
+  console.log('Exact match result:', inviteArray)
+  console.log('Exact match error:', arrayError)
+
+  // If exact match found, return it
+  if (inviteArray && inviteArray.length > 0) {
+    return { inviteArray, arrayError }
+  }
+
+  // If no exact match and it's a short token, try case-insensitive search
+  if (!searchPatterns.isUUID) {
+    console.log('Trying case-insensitive search for short token')
+    const { data: ilikeArray, error: ilikeError } = await supabase
+      .from('project_invites')
+      .select('*')
+      .ilike('token', token)
+
+    console.log('Case-insensitive result:', ilikeArray)
+    
+    if (ilikeArray && ilikeArray.length > 0) {
+      return { inviteArray: ilikeArray, arrayError: ilikeError }
+    }
+  }
 
   return { inviteArray, arrayError }
 }

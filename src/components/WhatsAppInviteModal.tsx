@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Client, Project } from "@/types/tasks"
 import { useProjectInvites } from "@/hooks/useProjectInvites"
+import { generateShortToken } from "@/utils/tokenHandler"
 
 interface WhatsAppInviteModalProps {
   isOpen: boolean
@@ -41,7 +42,7 @@ export function WhatsAppInviteModal({ isOpen, onClose, project, client }: WhatsA
         throw new Error('Número de telefone não encontrado')
       }
 
-      // Create invite in database
+      // Create invite in database with short token
       createInvite({
         projectId: project.id,
         clientId: client.id,
@@ -51,13 +52,14 @@ export function WhatsAppInviteModal({ isOpen, onClose, project, client }: WhatsA
         recipientEmail: recipientData.email
       })
 
-      // Generate and send WhatsApp message
+      // Generate and send WhatsApp message with short token
+      const shortToken = generateShortToken()
       const invite = {
         id: crypto.randomUUID(),
         projectId: project.id,
         clientId: client.id,
         invitedBy: '',
-        token: crypto.randomUUID(),
+        token: shortToken,
         contactType: selectedContact,
         recipientName: recipientData.name,
         recipientPhone: recipientData.phone,

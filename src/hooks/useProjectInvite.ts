@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react"
-import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { ProjectInviteData } from "@/types/projectInvite"
 import { debugTokenSearch, searchSimilarTokens } from "@/utils/inviteTokenDebugger"
 import { fetchInviteByToken, fetchRelatedData, buildCompleteInvite } from "@/utils/inviteDataFetcher"
-import { validateInvite } from "@/utils/inviteValidation"
+import { validateInvite, validateToken } from "@/utils/inviteValidation"
+import { supabase } from "@/integrations/supabase/client"
 
 export const useProjectInvite = (token: string | undefined) => {
   const { toast } = useToast()
@@ -22,7 +22,16 @@ export const useProjectInvite = (token: string | undefined) => {
         return
       }
 
-      console.log('Attempt:', retryCount + 1)
+      console.log('Fetch attempt:', retryCount + 1)
+
+      // Validate token format first
+      const tokenValidation = validateToken(token)
+      if (!tokenValidation.isValid) {
+        console.log('Token validation failed:', tokenValidation.error)
+        setError(tokenValidation.error!)
+        setLoading(false)
+        return
+      }
 
       try {
         // Debug token search
@@ -32,9 +41,9 @@ export const useProjectInvite = (token: string | undefined) => {
         const { inviteArray, arrayError } = await fetchInviteByToken(token)
 
         if (arrayError) {
-          console.error('Error fetching invite array:', arrayError)
+          console.error('Error fetching invite:', arrayError)
           
-          // Se for erro de rede ou temporário, tentar novamente
+          // Retry on network errors
           if (retryCount < 2 && (arrayError.code === 'PGRST301' || arrayError.message.includes('network'))) {
             console.log('Retrying in 1 second...')
             setTimeout(() => fetchInviteWithRetry(retryCount + 1), 1000)
@@ -46,11 +55,11 @@ export const useProjectInvite = (token: string | undefined) => {
           return
         }
 
-        // Verificar se encontrou o convite
+        // Check if invite was found
         if (!inviteArray || inviteArray.length === 0) {
           console.log('No invite found with token:', token)
           
-          // Search for similar tokens
+          // Search for similar tokens for debugging
           await searchSimilarTokens(token)
           
           setError("Convite não encontrado")
@@ -113,7 +122,7 @@ export const useProjectInvite = (token: string | undefined) => {
       } catch (err) {
         console.error('Unexpected error:', err)
         
-        // Tentar novamente se for erro temporário
+        // Retry on unexpected errors
         if (retryCount < 2) {
           console.log('Retrying due to unexpected error...')
           setTimeout(() => fetchInviteWithRetry(retryCount + 1), 1000)
