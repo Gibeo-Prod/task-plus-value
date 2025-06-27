@@ -1,4 +1,3 @@
-
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
 
 export const createTask = (
@@ -124,6 +123,8 @@ export const getViewTitle = (selectedView: string, selectedProject: Project | nu
       return "Planejado"
     case "tasks":
       return "Tarefas"
+    case "templates":
+      return "Templates de Checklist"
     default:
       if (selectedView.startsWith("client-")) {
         const client = clients.find(c => c.id === selectedView)
@@ -155,6 +156,8 @@ export const getViewSubtitle = (selectedView: string, selectedProject: Project |
       return "Tarefas com data de vencimento"
     case "tasks":
       return "Todas as suas tarefas"
+    case "templates":
+      return "Gerencie templates padrão para seus projetos"
     default:
       return ""
   }

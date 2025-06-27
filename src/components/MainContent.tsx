@@ -1,7 +1,7 @@
-
 import { TaskList } from "@/components/TaskList"
 import { ProjectList } from "@/components/ProjectList"
 import { ProjectDetails } from "@/components/ProjectDetails"
+import { ChecklistTemplateManager } from "@/components/ChecklistTemplateManager"
 import { Task, TaskCategory, TaskTag, Client, Project } from "@/types/tasks"
 import { getFilteredTasks, getViewTitle, getViewSubtitle } from "@/utils/dataOperations"
 
@@ -82,6 +82,11 @@ export function MainContent({
       taskData.projectId = selectedProject.id
     }
     onAddTask(taskData)
+  }
+
+  // Template manager view
+  if (selectedView === "templates") {
+    return <ChecklistTemplateManager />
   }
 
   if (selectedProject) {

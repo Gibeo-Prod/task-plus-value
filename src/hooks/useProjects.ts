@@ -1,95 +1,104 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from '@/hooks/use-toast'
+import { useChecklistTemplates } from '@/hooks/useChecklistTemplates'
 import { Project } from '@/types/tasks'
-import { mapProjectFromSupabase, mapStatusToDb } from '@/utils/supabaseDataMappers'
+import { mapProjectFromSupabase } from '@/utils/supabaseDataMappers'
+import { toast } from 'sonner'
 
 export const useProjects = () => {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
   const { user } = useAuth()
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
+  const { getDefaultTemplate, applyTemplateToProject } = useChecklistTemplates()
 
-  const { data: projects = [], isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects', user?.id],
-    queryFn: async () => {
-      if (!user) return []
+  const fetchProjects = async () => {
+    if (!user) return
+
+    try {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      
-      return data.map(mapProjectFromSupabase) as Project[]
-    },
-    enabled: !!user
-  })
 
-  const addProjectMutation = useMutation({
-    mutationFn: async (projectData: {
-      clientId: string
-      name: string
-      description?: string
-      value: number
-      status: string
-      priority: 'low' | 'medium' | 'high'
-      startDate?: string
-      dueDate?: string
-    }) => {
-      if (!user) throw new Error('User not authenticated')
-      
-      console.log('Adding project with data:', projectData)
-      
+      if (error) throw error
+
+      const mappedProjects = data?.map(mapProjectFromSupabase) || []
+      setProjects(mappedProjects)
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const addProject = async (clientId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => {
+    if (!user) return
+
+    try {
       const { data, error } = await supabase
         .from('projects')
         .insert({
-          user_id: user.id,
-          client_id: projectData.clientId,
+          client_id: clientId,
           name: projectData.name,
           description: projectData.description,
           value: projectData.value,
-          status: mapStatusToDb(projectData.status),
+          status: projectData.status,
           priority: projectData.priority,
           start_date: projectData.startDate || new Date().toISOString().split('T')[0],
           due_date: projectData.dueDate,
-          category: 'other',
-          assigned_to: user.email || 'Usuário'
+          user_id: user.id,
+          category: 'Interior Design',
+          progress: 0
         })
         .select()
         .single()
-      
-      if (error) {
-        console.error('Error creating project:', error)
-        throw error
+
+      if (error) throw error
+
+      const newProject = mapProjectFromSupabase(data)
+      setProjects(prev => [newProject, ...prev])
+
+      // Apply default checklist template to the new project
+      try {
+        const defaultTemplate = getDefaultTemplate()
+        if (defaultTemplate) {
+          const tasksAdded = await applyTemplateToProject(defaultTemplate.id, newProject.id)
+          toast.success(`Projeto criado com sucesso! ${tasksAdded} tarefas do checklist padrão foram adicionadas.`)
+        } else {
+          toast.success('Projeto criado com sucesso!')
+        }
+      } catch (templateError) {
+        console.error('Error applying template:', templateError)
+        toast.success('Projeto criado com sucesso, mas não foi possível aplicar o checklist padrão.')
       }
-      
-      console.log('Project created successfully:', data)
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: ['clients'] })
-      toast({
-        title: "Projeto criado",
-        description: "Novo projeto criado com sucesso!",
-      })
-    },
-    onError: (error) => {
-      console.error('Project mutation error:', error)
-      toast({
-        title: "Erro",
-        description: "Erro ao criar projeto: " + error.message,
-        variant: "destructive"
-      })
+
+      return newProject
+    } catch (error) {
+      console.error('Error creating project:', error)
+      toast.error('Erro ao criar projeto')
+      throw error
     }
-  })
+  }
+
+  useEffect(() => {
+    fetchProjects()
+  }, [user])
 
   return {
     projects,
-    projectsLoading,
-    addProject: addProjectMutation.mutate
+    loading,
+    fetchProjects,
+    addProject
   }
 }
