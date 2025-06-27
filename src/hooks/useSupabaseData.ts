@@ -14,7 +14,7 @@ export const useSupabaseData = () => {
 
   const loading = tasksData.tasksLoading || 
                  clientsData.clientsLoading || 
-                 projectsData.projectsLoading || 
+                 projectsData.loading || 
                  categoriesAndTagsData.categoriesLoading || 
                  categoriesAndTagsData.tagsLoading
 

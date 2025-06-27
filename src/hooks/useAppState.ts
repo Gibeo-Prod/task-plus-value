@@ -14,7 +14,7 @@ export const useAppState = () => {
     loading,
     addTask,
     addClient,
-    addProject,
+    addProject: addProjectSupabase,
     addCategory,
     addTag,
     toggleTask,
@@ -28,6 +28,21 @@ export const useAppState = () => {
   const [selectedView, setSelectedView] = useState("myday")
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const { toast } = useToast()
+
+  // Adapter function to match the expected signature
+  const addProject = (projectData: {
+    clientId: string
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => {
+    const { clientId, ...restData } = projectData
+    return addProjectSupabase(clientId, restData)
+  }
 
   // Helper function to get client by ID
   const getClientById = (clientId: string): Client | undefined => {

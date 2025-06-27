@@ -1,4 +1,5 @@
-import { Home, CheckSquare, Calendar, Star, Users, Settings, Template, CheckCircle } from "lucide-react"
+
+import { Home, CheckSquare, Calendar, Star, Users, Settings, FileText, CheckCircle } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +12,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from "@/components/ui/sidebar"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ClientForm } from "@/components/ClientForm"
 import { useState } from "react"
 import { Client } from "@/types/tasks"
@@ -56,7 +58,7 @@ const menuItems = [
   {
     title: "Templates",
     url: "templates",
-    icon: Template,
+    icon: FileText,
   },
 ]
 
@@ -114,9 +116,19 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>
             Clientes
-            <button onClick={() => setShowClientForm(true)} className="text-xs text-muted-foreground hover:text-foreground">
-              (Novo)
-            </button>
+            <Dialog open={showClientForm} onOpenChange={setShowClientForm}>
+              <DialogTrigger asChild>
+                <button className="text-xs text-muted-foreground hover:text-foreground">
+                  (Novo)
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <ClientForm
+                  onSubmit={handleClientSubmit}
+                  onCancel={() => setShowClientForm(false)}
+                />
+              </DialogContent>
+            </Dialog>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {clients.map((client) => (
@@ -147,12 +159,6 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarFooter>
-
-      <ClientForm 
-        open={showClientForm}
-        onClose={() => setShowClientForm(false)}
-        onSubmit={handleClientSubmit}
-      />
     </Sidebar>
   )
 }
