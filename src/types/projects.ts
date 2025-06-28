@@ -1,4 +1,6 @@
 
+import { Project, Client } from '@/types/tasks'
+
 export interface ProjectStatus {
   id: string
   name: string
