@@ -25,7 +25,7 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
     name: '',
     description: '',
     value: 0,
-    status: 'Planejamento',
+    status: 'new',
     priority: 'medium' as 'low' | 'medium' | 'high',
     startDate: '',
     dueDate: ''
@@ -89,12 +89,12 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Planejamento">Planejamento</SelectItem>
-                <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                <SelectItem value="Em Revisão">Em Revisão</SelectItem>
-                <SelectItem value="Concluído">Concluído</SelectItem>
-                <SelectItem value="Pausado">Pausado</SelectItem>
-                <SelectItem value="Cancelado">Cancelado</SelectItem>
+                <SelectItem value="new">Novo</SelectItem>
+                <SelectItem value="in_progress">Em Andamento</SelectItem>
+                <SelectItem value="in_review">Em Revisão</SelectItem>
+                <SelectItem value="completed">Concluído</SelectItem>
+                <SelectItem value="on_hold">Pausado</SelectItem>
+                <SelectItem value="cancelled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
           </div>

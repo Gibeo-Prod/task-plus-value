@@ -41,6 +41,19 @@ interface KanbanBoardProps {
   onUpdateProject?: (projectId: string, updates: Partial<Project>) => void
 }
 
+// Função para mapear status do DB para nomes legíveis
+const mapStatusFromDb = (dbStatus: string): string => {
+  const statusMap = {
+    'new': 'Planejamento',
+    'in_progress': 'Em Andamento',
+    'in_review': 'Em Revisão',
+    'completed': 'Concluído',
+    'on_hold': 'Pausado',
+    'cancelled': 'Cancelado'
+  }
+  return statusMap[dbStatus as keyof typeof statusMap] || dbStatus
+}
+
 export function KanbanBoard({ 
   projects, 
   clients, 
@@ -102,19 +115,6 @@ export function KanbanBoard({
       console.error('Error updating project status:', error)
       toast.error('Erro ao atualizar status do projeto')
     }
-  }
-
-  // Função para mapear status do DB para nomes legíveis
-  const mapStatusFromDb = (dbStatus: string): string => {
-    const statusMap = {
-      'new': 'Planejamento',
-      'in_progress': 'Em Andamento',
-      'in_review': 'Em Revisão',
-      'completed': 'Concluído',
-      'on_hold': 'Pausado',
-      'cancelled': 'Cancelado'
-    }
-    return statusMap[dbStatus as keyof typeof statusMap] || dbStatus
   }
 
   if (loading) {

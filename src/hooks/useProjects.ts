@@ -58,7 +58,7 @@ export const useProjects = () => {
           start_date: projectData.startDate || new Date().toISOString().split('T')[0],
           due_date: projectData.dueDate,
           user_id: user.id,
-          category: 'design',
+          category: 'web',
           progress: 0
         })
         .select()
