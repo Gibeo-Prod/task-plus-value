@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -45,6 +44,8 @@ export const useProjects = () => {
   }) => {
     if (!user) return
 
+    console.log('Adding project:', { clientId, projectData })
+
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -58,7 +59,7 @@ export const useProjects = () => {
           start_date: projectData.startDate || new Date().toISOString().split('T')[0],
           due_date: projectData.dueDate,
           user_id: user.id,
-          category: 'web',
+          category: 'website',
           progress: 0
         })
         .select()
