@@ -474,6 +474,36 @@ export type Database = {
           },
         ]
       }
+      project_statuses: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           assigned_to: string | null
@@ -744,6 +774,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      seed_existing_users_project_statuses: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       seed_existing_users_statuses: {
         Args: Record<PropertyKey, never>
         Returns: string
