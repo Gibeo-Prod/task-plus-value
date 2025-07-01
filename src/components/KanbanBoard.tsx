@@ -63,17 +63,24 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { statuses, loading } = useProjectStatuses()
   const [showStatusManager, setShowStatusManager] = useState(false)
-  const [draggedProject, setDraggedProject] = useState<Project | null>(null)
 
-  // Organizar projetos por status
+  console.log('KanbanBoard - Projects received:', projects.length)
+  console.log('KanbanBoard - Statuses:', statuses.map(s => s.name))
+
+  // Organizar projetos por status - melhorar o mapeamento
   const projectsByStatus = statuses.reduce((acc, status) => {
     acc[status.name] = projects.filter(project => {
-      // Mapear os status do banco para os nomes legíveis
+      // Primeiro tenta mapear do banco para legível
       const mappedStatus = mapStatusFromDb(project.status)
-      return mappedStatus === status.name
+      console.log(`Project ${project.name}: status=${project.status}, mapped=${mappedStatus}, comparing to=${status.name}`)
+      
+      // Se não encontrou o mapeamento, compara diretamente
+      return mappedStatus === status.name || project.status === status.name
     })
     return acc
   }, {} as Record<string, Project[]>)
+
+  console.log('Projects by status:', Object.entries(projectsByStatus).map(([status, projects]) => `${status}: ${projects.length}`))
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result
