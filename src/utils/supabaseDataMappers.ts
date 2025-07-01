@@ -20,18 +20,25 @@ export const mapTaskFromSupabase = (task: any): Task => ({
   text: task.title // Map title to text for backward compatibility
 })
 
-export const mapProjectFromSupabase = (project: any): Project => ({
-  id: project.id,
-  name: project.name,
-  clientId: project.client_id,
-  value: Number(project.value),
-  description: project.description,
-  startDate: project.start_date,
-  dueDate: project.due_date,
-  status: mapStatusFromDb(project.status),
-  priority: project.priority as 'low' | 'medium' | 'high',
-  tasks: 0 // Will be calculated separately
-})
+export const mapProjectFromSupabase = (project: any): Project => {
+  console.log('Mapping project from Supabase:', { id: project.id, name: project.name, status: project.status })
+  
+  const mappedProject = {
+    id: project.id,
+    name: project.name,
+    clientId: project.client_id,
+    value: Number(project.value),
+    description: project.description,
+    startDate: project.start_date,
+    dueDate: project.due_date,
+    status: project.status, // Não vamos mapear aqui, deixar o status original
+    priority: project.priority as 'low' | 'medium' | 'high',
+    tasks: 0 // Will be calculated separately
+  }
+  
+  console.log('Mapped project:', mappedProject)
+  return mappedProject
+}
 
 export const mapClientFromSupabase = (client: any, projects: Project[]): Client => ({
   id: client.id,
@@ -62,23 +69,21 @@ export const mapTagFromSupabase = (tag: any): TaskTag => ({
 
 export const mapStatusToDb = (frontendStatus: string): string => {
   const statusMap = {
-    'planejamento': 'new',
-    'em-andamento': 'in_progress',
-    'em-revisao': 'in_review',
-    'concluido': 'completed',
-    'pausado': 'on_hold',
-    'cancelado': 'cancelled',
-    'Pendente': 'new',
+    'Planejamento': 'new',
     'Em Andamento': 'in_progress',
+    'Em Revisão': 'in_review',
     'Concluído': 'completed',
-    'Atrasado': 'overdue'
+    'Pausado': 'on_hold',
+    'Cancelado': 'cancelled',
+    'Pendente': 'new'
   }
   return statusMap[frontendStatus as keyof typeof statusMap] || 'new'
 }
 
 export const mapStatusFromDb = (dbStatus: string): string => {
   const statusMap = {
-    'new': 'Pendente',
+    'Pendente': 'Planejamento', // Mapear Pendente para Planejamento
+    'new': 'Planejamento',
     'in_progress': 'Em Andamento',
     'in_review': 'Em Revisão',
     'completed': 'Concluído',
@@ -86,5 +91,5 @@ export const mapStatusFromDb = (dbStatus: string): string => {
     'cancelled': 'Cancelado',
     'overdue': 'Atrasado'
   }
-  return statusMap[dbStatus as keyof typeof statusMap] || 'Pendente'
+  return statusMap[dbStatus as keyof typeof statusMap] || dbStatus
 }

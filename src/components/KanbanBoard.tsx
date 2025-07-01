@@ -36,6 +36,7 @@ export function KanbanBoard({
   const { handleDragEnd } = useKanbanDragDrop(projects, statuses, onUpdateProject)
 
   console.log('KanbanBoard - Projects received:', projects.length)
+  console.log('KanbanBoard - Projects data:', projects.map(p => ({ name: p.name, status: p.status })))
   console.log('KanbanBoard - Statuses:', statuses.map(s => s.name))
 
   // Organizar projetos por status
@@ -61,6 +62,7 @@ export function KanbanBoard({
         <div className="flex gap-6 overflow-x-auto pb-4">
           {statuses.map((status) => {
             const statusProjects = projectsByStatus[status.name] || []
+            console.log(`Rendering column ${status.name} with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
             
             return (
               <KanbanColumn

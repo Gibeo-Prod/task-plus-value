@@ -26,7 +26,7 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
     return acc
   }, {} as Record<string, any[]>)
 
-  console.log('Projects by status:', Object.entries(projectsByStatus).map(([status, projects]) => `${status}: ${projects.length}`))
+  console.log('Projects by status:', Object.entries(projectsByStatus).map(([status, projectList]) => `${status}: ${(projectList as any[]).length}`))
   
   return projectsByStatus
 }
