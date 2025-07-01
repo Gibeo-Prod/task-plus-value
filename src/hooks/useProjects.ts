@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -59,13 +60,16 @@ export const useProjects = () => {
           start_date: projectData.startDate || new Date().toISOString().split('T')[0],
           due_date: projectData.dueDate,
           user_id: user.id,
-          category: 'website',
+          category: 'general',
           progress: 0
         })
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw error
+      }
 
       const newProject = mapProjectFromSupabase(data)
       setProjects(prev => [newProject, ...prev])
@@ -87,7 +91,11 @@ export const useProjects = () => {
       return newProject
     } catch (error) {
       console.error('Error creating project:', error)
-      toast.error('Erro ao criar projeto')
+      if (error.message?.includes('category_check') || error.message?.includes('check constraint')) {
+        toast.error('Erro ao criar projeto: categoria inválida. Tente novamente.')
+      } else {
+        toast.error('Erro ao criar projeto')
+      }
       throw error
     }
   }
