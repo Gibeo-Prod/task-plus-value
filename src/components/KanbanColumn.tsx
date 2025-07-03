@@ -4,6 +4,7 @@ import { MoreVertical, Settings } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { ProjectKanbanCard } from '@/components/ProjectKanbanCard'
 import { Project, Client, ProjectStatus } from '@/types/projects'
 import {
@@ -43,8 +44,8 @@ export function KanbanColumn({
     <div className="flex-shrink-0 w-80">
       <Droppable droppableId={status.name}>
         {(provided, snapshot) => (
-          <Card className={`h-fit min-h-[500px] ${snapshot.isDraggingOver ? 'bg-muted/50' : ''}`}>
-            <CardHeader className="pb-3">
+          <Card className={`h-[calc(100vh-200px)] flex flex-col ${snapshot.isDraggingOver ? 'bg-muted/50' : ''}`}>
+            <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div 
@@ -78,40 +79,44 @@ export function KanbanColumn({
               </div>
             </CardHeader>
             
-            <CardContent 
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-3"
-            >
-              {projects.map((project, index) => (
-                <Draggable
-                  key={project.id}
-                  draggableId={project.id}
-                  index={index}
+            <CardContent className="flex-1 overflow-hidden p-0">
+              <ScrollArea className="h-full px-6 pb-6">
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-3"
                 >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={snapshot.isDragging ? 'rotate-3 scale-105' : ''}
+                  {projects.map((project, index) => (
+                    <Draggable
+                      key={project.id}
+                      draggableId={project.id}
+                      index={index}
                     >
-                      <ProjectKanbanCard
-                        project={project}
-                        client={clients.find(c => c.id === project.clientId)}
-                        onClick={() => onProjectClick(project)}
-                        dragHandleProps={provided.dragHandleProps}
-                      />
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={snapshot.isDragging ? 'rotate-3 scale-105' : ''}
+                        >
+                          <ProjectKanbanCard
+                            project={project}
+                            client={clients.find(c => c.id === project.clientId)}
+                            onClick={() => onProjectClick(project)}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  
+                  {projects.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">Nenhum projeto</p>
                     </div>
                   )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-              
-              {projects.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Nenhum projeto</p>
                 </div>
-              )}
+              </ScrollArea>
             </CardContent>
           </Card>
         )}

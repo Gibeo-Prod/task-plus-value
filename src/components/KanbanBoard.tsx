@@ -77,32 +77,36 @@ export function KanbanBoard({
   }
 
   return (
-    <div className="h-full">
-      <KanbanHeader 
-        projects={localProjects}
-        showStatusManager={showStatusManager}
-        onStatusManagerToggle={setShowStatusManager}
-      />
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0">
+        <KanbanHeader 
+          projects={localProjects}
+          showStatusManager={showStatusManager}
+          onStatusManagerToggle={setShowStatusManager}
+        />
+      </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-6 overflow-x-auto pb-4">
-          {statuses.map((status) => {
-            const statusProjects = projectsByStatus[status.name] || []
-            console.log(`Rendering column ${status.name} with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
-            
-            return (
-              <KanbanColumn
-                key={status.id}
-                status={status}
-                projects={statusProjects}
-                clients={clients}
-                onProjectClick={onProjectClick}
-                onEditStatus={() => setShowStatusManager(true)}
-              />
-            )
-          })}
-        </div>
-      </DragDropContext>
+      <div className="flex-1 overflow-hidden">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="flex gap-6 h-full overflow-x-auto pb-4">
+            {statuses.map((status) => {
+              const statusProjects = projectsByStatus[status.name] || []
+              console.log(`Rendering column ${status.name} with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
+              
+              return (
+                <KanbanColumn
+                  key={status.id}
+                  status={status}
+                  projects={statusProjects}
+                  clients={clients}
+                  onProjectClick={onProjectClick}
+                  onEditStatus={() => setShowStatusManager(true)}
+                />
+              )
+            })}
+          </div>
+        </DragDropContext>
+      </div>
     </div>
   )
 }
