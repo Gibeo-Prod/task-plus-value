@@ -28,6 +28,17 @@ export function KanbanColumn({
   onProjectClick,
   onEditStatus 
 }: KanbanColumnProps) {
+  // Calculate total value of projects in this column
+  const totalValue = projects.reduce((sum, project) => sum + (project.value || 0), 0)
+  
+  // Format currency value
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
   return (
     <div className="flex-shrink-0 w-80">
       <Droppable droppableId={status.name}>
@@ -59,6 +70,11 @@ export function KanbanColumn({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
+              
+              {/* Show total value */}
+              <div className="text-sm text-muted-foreground font-medium">
+                Total: {formatCurrency(totalValue)}
               </div>
             </CardHeader>
             
