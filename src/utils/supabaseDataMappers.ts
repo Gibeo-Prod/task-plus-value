@@ -31,7 +31,7 @@ export const mapProjectFromSupabase = (project: any): Project => {
     description: project.description,
     startDate: project.start_date,
     dueDate: project.due_date,
-    status: project.status, // Não vamos mapear aqui, deixar o status original
+    status: project.status, // Manter o status original do banco de dados
     priority: project.priority as 'low' | 'medium' | 'high',
     tasks: 0 // Will be calculated separately
   }
@@ -74,22 +74,23 @@ export const mapStatusToDb = (frontendStatus: string): string => {
     'Em Revisão': 'in_review',
     'Concluído': 'completed',
     'Pausado': 'on_hold',
-    'Cancelado': 'cancelled',
-    'Pendente': 'new'
+    'Cancelado': 'cancelled'
   }
-  return statusMap[frontendStatus as keyof typeof statusMap] || 'new'
+  const mappedStatus = statusMap[frontendStatus as keyof typeof statusMap] || 'new'
+  console.log(`Mapping frontend status '${frontendStatus}' to DB status '${mappedStatus}'`)
+  return mappedStatus
 }
 
 export const mapStatusFromDb = (dbStatus: string): string => {
   const statusMap = {
-    'Pendente': 'Planejamento', // Mapear Pendente para Planejamento
     'new': 'Planejamento',
     'in_progress': 'Em Andamento',
     'in_review': 'Em Revisão',
     'completed': 'Concluído',
     'on_hold': 'Pausado',
-    'cancelled': 'Cancelado',
-    'overdue': 'Atrasado'
+    'cancelled': 'Cancelado'
   }
-  return statusMap[dbStatus as keyof typeof statusMap] || dbStatus
+  const mappedStatus = statusMap[dbStatus as keyof typeof statusMap] || dbStatus
+  console.log(`Mapping DB status '${dbStatus}' to frontend status '${mappedStatus}'`)
+  return mappedStatus
 }

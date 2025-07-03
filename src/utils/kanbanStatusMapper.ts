@@ -16,12 +16,16 @@ export const mapStatusFromDb = (dbStatus: string): string => {
 export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
   const projectsByStatus = statuses.reduce((acc, status) => {
     acc[status.name] = projects.filter(project => {
-      // Primeiro tenta mapear do banco para legível
-      const mappedStatus = mapStatusFromDb(project.status)
-      console.log(`Project ${project.name}: status=${project.status}, mapped=${mappedStatus}, comparing to=${status.name}`)
+      console.log(`Project ${project.name}: project.status=${project.status}, status.name=${status.name}`)
       
-      // Se não encontrou o mapeamento, compara diretamente
-      return mappedStatus === status.name || project.status === status.name
+      // Comparar diretamente o status do projeto com o nome do status
+      // Se o projeto tem status do banco (ex: 'new'), comparar com status mapeado
+      const mappedProjectStatus = mapStatusFromDb(project.status)
+      const matches = mappedProjectStatus === status.name
+      
+      console.log(`Mapped project status: ${mappedProjectStatus}, matches: ${matches}`)
+      
+      return matches
     })
     return acc
   }, {} as Record<string, any[]>)

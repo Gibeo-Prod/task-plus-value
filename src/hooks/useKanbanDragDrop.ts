@@ -30,14 +30,16 @@ export const useKanbanDragDrop = (
     const newStatus = statuses.find(s => s.name === destStatus)
     if (!newStatus) return
 
+    console.log(`Dragging project ${project.name} from ${sourceStatus} to ${destStatus}`)
+
     // Atualizar localmente primeiro para feedback imediato
     if (onUpdateProject) {
-      onUpdateProject(project.id, { status: newStatus.name })
+      onUpdateProject(project.id, { status: destStatus })
     }
 
     try {
       // Mapear o status para o formato do banco
-      const dbStatus = mapStatusToDb(newStatus.name)
+      const dbStatus = mapStatusToDb(destStatus)
       
       console.log(`Updating project ${project.name} from ${sourceStatus} to ${destStatus} (DB: ${dbStatus})`)
       
@@ -47,14 +49,19 @@ export const useKanbanDragDrop = (
         .update({ status: dbStatus })
         .eq('id', project.id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      console.log(`Successfully updated project ${project.name} to status ${dbStatus}`)
 
       // Refresh projects from server to ensure persistence
       if (onRefreshProjects) {
-        onRefreshProjects()
+        await onRefreshProjects()
       }
 
-      toast.success(`Projeto movido para "${newStatus.name}"`)
+      toast.success(`Projeto movido para "${destStatus}"`)
     } catch (error) {
       console.error('Error updating project status:', error)
       // Reverter a mudança local em caso de erro
