@@ -1,9 +1,8 @@
 
-import { Home, CheckSquare, Calendar, Star, Users, Settings, FileText, CheckCircle } from "lucide-react"
+import { CalendarDays, CheckSquare, Star, FileText, Plus, Building2, Users, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,11 +10,41 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { ClientForm } from "@/components/ClientForm"
-import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ClientForm } from "./ClientForm"
+import { ClientItem } from "./ClientItem"
 import { Client } from "@/types/tasks"
+
+// Navigation items
+const items = [
+  {
+    title: "Meu Dia",
+    value: "myday",
+    icon: CalendarDays,
+  },
+  {
+    title: "Importante",
+    value: "important",
+    icon: Star,
+  },
+  {
+    title: "Planejado",
+    value: "planned",
+    icon: CheckSquare,
+  },
+  {
+    title: "Tarefas",
+    value: "tasks",
+    icon: FileText,
+  },
+  {
+    title: "Templates",
+    value: "templates",
+    icon: Settings,
+  },
+]
 
 interface AppSidebarProps {
   selectedView: string
@@ -34,77 +63,37 @@ interface AppSidebarProps {
   onDeleteClient: (clientId: string) => void
 }
 
-const menuItems = [
-  {
-    title: "Meu Dia",
-    url: "myday",
-    icon: Home,
-  },
-  {
-    title: "Importante",
-    url: "important",
-    icon: Star,
-  },
-  {
-    title: "Planejado",
-    url: "planned",
-    icon: Calendar,
-  },
-  {
-    title: "Tarefas",
-    url: "tasks",
-    icon: CheckSquare,
-  },
-  {
-    title: "Templates",
-    url: "templates",
-    icon: FileText,
-  },
-]
-
 export function AppSidebar({ 
   selectedView, 
   onViewChange, 
   clients, 
-  onAddClient, 
-  onArchiveClient, 
+  onAddClient,
+  onArchiveClient,
   onDeleteClient 
 }: AppSidebarProps) {
-  const [showClientForm, setShowClientForm] = useState(false)
-
-  const handleClientSubmit = (clientData: {
-    name: string
-    email: string
-    phone?: string
-    company?: string
-    contactPersonName?: string
-    contactPersonEmail?: string
-    contactPersonPhone?: string
-  }) => {
-    onAddClient(clientData)
-    setShowClientForm(false)
-  }
-
   return (
-    <Sidebar variant="inset">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-2">
-          <CheckCircle className="h-8 w-8 text-ms-blue" />
-          <span className="text-xl font-bold text-ms-blue">TaskFlow</span>
+    <Sidebar className="border-r border-border bg-background">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-ms-blue rounded-lg flex items-center justify-center">
+            <CheckSquare className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-semibold text-lg">TaskFlow</span>
         </div>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    onClick={() => onViewChange(item.url)}
-                    isActive={selectedView === item.url}
+              {items.map((item) => (
+                <SidebarMenuItem key={item.value}>
+                  <SidebarMenuButton
+                    onClick={() => onViewChange(item.value)}
+                    isActive={selectedView === item.value}
+                    className="w-full justify-start"
                   >
-                    <item.icon />
+                    <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -114,50 +103,42 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>
-            Clientes
-            <Dialog open={showClientForm} onOpenChange={setShowClientForm}>
-              <DialogTrigger asChild>
-                <button className="text-xs text-muted-foreground hover:text-foreground">
-                  (Novo)
-                </button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <ClientForm
-                  onSubmit={handleClientSubmit}
-                  onCancel={() => setShowClientForm(false)}
-                />
-              </DialogContent>
-            </Dialog>
+          <SidebarGroupLabel className="flex items-center justify-between">
+            <span>Clientes</span>
+            <ClientForm onAddClient={onAddClient}>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </ClientForm>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            {clients.map((client) => (
-              <SidebarMenuItem key={client.id}>
-                <SidebarMenuButton
+            <div className="space-y-1">
+              {clients.map((client) => (
+                <ClientItem
+                  key={client.id}
+                  client={client}
+                  isSelected={selectedView === `client-${client.id}`}
                   onClick={() => onViewChange(`client-${client.id}`)}
-                  isActive={selectedView === `client-${client.id}`}
-                >
-                  <Users />
-                  <span>{client.name}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+                  onArchive={onArchiveClient}
+                  onDelete={onDeleteClient}
+                />
+              ))}
+              {clients.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Nenhum cliente</p>
+                  <p className="text-xs">Adicione um cliente para começar</p>
+                </div>
+              )}
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onViewChange("settings")}>
-                  <Settings />
-                  <span>Configurações</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+      <SidebarFooter className="p-4">
+        <div className="text-xs text-muted-foreground text-center">
+          TaskFlow v1.0
+        </div>
       </SidebarFooter>
     </Sidebar>
   )
