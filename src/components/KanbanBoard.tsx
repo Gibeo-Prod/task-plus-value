@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DragDropContext } from '@hello-pangea/dnd'
 import { useProjectStatuses } from '@/hooks/useProjectStatuses'
 import { useKanbanDragDrop } from '@/hooks/useKanbanDragDrop'
@@ -36,7 +36,7 @@ export function KanbanBoard({
   const [localProjects, setLocalProjects] = useState<Project[]>(projects)
 
   // Sincronizar projetos locais quando os projetos externos mudarem
-  useState(() => {
+  useEffect(() => {
     setLocalProjects(projects)
   }, [projects])
 
