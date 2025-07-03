@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { CategorySelector } from "./CategorySelector"
 import { TagSelector } from "./TagSelector"
 import { PrioritySelector } from "./PrioritySelector"
-import { TaskCategory, TaskTag } from "@/types/tasks"
+import { TaskCategory, TaskTag, Project, Client } from "@/types/tasks"
 
 interface TaskInputProps {
   onAddTask: (data: {
@@ -27,6 +27,8 @@ interface TaskInputProps {
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
   projectId?: string | null
+  project?: Project | null
+  client?: Client | null
 }
 
 export function TaskInput({ 
@@ -36,7 +38,9 @@ export function TaskInput({
   tags,
   onAddCategory,
   onAddTag,
-  projectId
+  projectId,
+  project,
+  client
 }: TaskInputProps) {
   const [taskText, setTaskText] = useState("")
   const [dueDate, setDueDate] = useState("")
@@ -99,6 +103,19 @@ export function TaskInput({
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-background">
+      {/* Project and Client Info */}
+      {project && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+          <FileText className="w-4 h-4" />
+          <span>
+            Adicionando tarefa ao projeto: <strong>{project.name}</strong>
+            {client && (
+              <span> • Cliente: <strong>{client.name}</strong></span>
+            )}
+          </span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-2">
           <Input

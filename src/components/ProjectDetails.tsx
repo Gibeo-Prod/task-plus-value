@@ -85,6 +85,8 @@ export function ProjectDetails({
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
         projectId={project.id}
+        project={project}
+        client={client}
       />
 
       <WhatsAppInviteModal

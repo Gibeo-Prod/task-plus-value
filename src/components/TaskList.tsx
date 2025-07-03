@@ -1,11 +1,10 @@
-
 import { useState } from "react"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskItem } from "./TaskItem"
 import { TaskInput } from "./TaskInput"
 import { TaskDetailsSheet } from "./TaskDetailsSheet"
-import { Task, TaskCategory, TaskTag } from "@/types/tasks"
+import { Task, TaskCategory, TaskTag, Project, Client } from "@/types/tasks"
 
 interface TaskListProps {
   tasks: Task[]
@@ -32,6 +31,8 @@ interface TaskListProps {
   showBackButton?: boolean
   onBack?: () => void
   projectId?: string | null
+  project?: Project | null
+  client?: Client | null
 }
 
 export function TaskList({
@@ -49,7 +50,9 @@ export function TaskList({
   onAddTag,
   showBackButton = false,
   onBack,
-  projectId
+  projectId,
+  project,
+  client
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -139,6 +142,8 @@ export function TaskList({
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
         projectId={projectId}
+        project={project}
+        client={client}
       />
 
       <div className="space-y-4">
