@@ -13,7 +13,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { ClientForm } from "./ClientForm"
+import { ClientFormDialog } from "./ClientFormDialog"
 import { ClientItem } from "./ClientItem"
 import { Client } from "@/types/tasks"
 
@@ -105,11 +105,11 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
             <span>Clientes</span>
-            <ClientForm onAddClient={onAddClient}>
+            <ClientFormDialog onAddClient={onAddClient}>
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <Plus className="w-4 h-4" />
               </Button>
-            </ClientForm>
+            </ClientFormDialog>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-1">
