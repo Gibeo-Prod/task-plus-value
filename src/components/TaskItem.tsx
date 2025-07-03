@@ -1,11 +1,12 @@
+
 import { useState } from "react"
-import { Trash2, Star, Calendar, Bell, AlertCircle, ArrowUp, Minus, FileText, Tag, Folder } from "lucide-react"
+import { Trash2, Star, Calendar, Bell, AlertCircle, ArrowUp, Minus, FileText, Tag, Folder, Building2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
-import { Task } from "@/types/tasks"
+import { Task, Project, Client } from "@/types/tasks"
 
 interface TaskItemProps {
   task: Task
@@ -13,9 +14,11 @@ interface TaskItemProps {
   onDelete: (id: string) => void
   onToggleImportant: (id: string) => void
   onTaskClick: (task: Task) => void
+  project?: Project | null
+  client?: Client | null
 }
 
-export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskClick }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskClick, project, client }: TaskItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -105,6 +108,24 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
               </Button>
             </div>
           </div>
+
+          {/* Project and Client info */}
+          {(project || client) && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+              {project && (
+                <div className="flex items-center gap-1">
+                  <Folder className="w-3 h-3" />
+                  <span>Projeto: <strong>{project.name}</strong></span>
+                </div>
+              )}
+              {client && (
+                <div className="flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  <span>Cliente: <strong>{client.name}</strong></span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Task metadata */}
           <div className="flex items-center gap-3 flex-wrap">

@@ -33,6 +33,8 @@ interface TaskListProps {
   projectId?: string | null
   project?: Project | null
   client?: Client | null
+  projects?: Project[]
+  clients?: Client[]
 }
 
 export function TaskList({
@@ -52,7 +54,9 @@ export function TaskList({
   onBack,
   projectId,
   project,
-  client
+  client,
+  projects = [],
+  clients = []
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -107,6 +111,20 @@ export function TaskList({
     onAddTask(taskData)
   }
 
+  // Helper function to get project and client for a task  
+  const getTaskContext = (task: Task) => {
+    if (project && client) {
+      // If we already have project and client context, use them
+      return { taskProject: project, taskClient: client }
+    }
+    
+    // Otherwise, find them based on task's projectId
+    const taskProject = task.projectId ? projects.find(p => p.id === task.projectId) : null
+    const taskClient = taskProject ? clients.find(c => c.id === taskProject.clientId) : null
+    
+    return { taskProject, taskClient }
+  }
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="space-y-2">
@@ -149,16 +167,21 @@ export function TaskList({
       <div className="space-y-4">
         {sortedIncompleteTasks.length > 0 && (
           <div className="space-y-2">
-            {sortedIncompleteTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onToggleImportant={onToggleImportant}
-                onTaskClick={handleTaskClick}
-              />
-            ))}
+            {sortedIncompleteTasks.map((task) => {
+              const { taskProject, taskClient } = getTaskContext(task)
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggle={onToggleTask}
+                  onDelete={onDeleteTask}
+                  onToggleImportant={onToggleImportant}
+                  onTaskClick={handleTaskClick}
+                  project={taskProject}
+                  client={taskClient}
+                />
+              )
+            })}
           </div>
         )}
 
@@ -171,16 +194,21 @@ export function TaskList({
               </span>
               <div className="h-px bg-border flex-1" />
             </div>
-            {completedTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onToggleImportant={onToggleImportant}
-                onTaskClick={handleTaskClick}
-              />
-            ))}
+            {completedTasks.map((task) => {
+              const { taskProject, taskClient } = getTaskContext(task)
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggle={onToggleTask}
+                  onDelete={onDeleteTask}
+                  onToggleImportant={onToggleImportant}
+                  onTaskClick={handleTaskClick}
+                  project={taskProject}
+                  client={taskClient}
+                />
+              )
+            })}
           </div>
         )}
 

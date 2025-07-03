@@ -1,3 +1,4 @@
+
 import { TaskList } from "@/components/TaskList"
 import { ProjectList } from "@/components/ProjectList"
 import { ProjectDetails } from "@/components/ProjectDetails"
@@ -137,6 +138,8 @@ export function MainContent({
       tags={tags}
       onAddCategory={onAddCategory}
       onAddTag={onAddTag}
+      projects={projects}
+      clients={clients}
     />
   )
 }
