@@ -33,14 +33,33 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { statuses, loading } = useProjectStatuses()
   const [showStatusManager, setShowStatusManager] = useState(false)
-  const { handleDragEnd } = useKanbanDragDrop(projects, statuses, onUpdateProject)
+  const [localProjects, setLocalProjects] = useState<Project[]>(projects)
 
-  console.log('KanbanBoard - Projects received:', projects.length)
-  console.log('KanbanBoard - Projects data:', projects.map(p => ({ name: p.name, status: p.status })))
+  // Sincronizar projetos locais quando os projetos externos mudarem
+  useState(() => {
+    setLocalProjects(projects)
+  }, [projects])
+
+  // Função para atualizar projetos localmente
+  const handleUpdateProject = (projectId: string, updates: Partial<Project>) => {
+    setLocalProjects(prev => prev.map(project => 
+      project.id === projectId ? { ...project, ...updates } : project
+    ))
+    
+    // Chamar a função externa se fornecida
+    if (onUpdateProject) {
+      onUpdateProject(projectId, updates)
+    }
+  }
+
+  const { handleDragEnd } = useKanbanDragDrop(localProjects, statuses, handleUpdateProject)
+
+  console.log('KanbanBoard - Projects received:', localProjects.length)
+  console.log('KanbanBoard - Projects data:', localProjects.map(p => ({ name: p.name, status: p.status })))
   console.log('KanbanBoard - Statuses:', statuses.map(s => s.name))
 
-  // Organizar projetos por status
-  const projectsByStatus = organizeProjectsByStatus(projects, statuses)
+  // Organizar projetos por status usando projetos locais
+  const projectsByStatus = organizeProjectsByStatus(localProjects, statuses)
 
   if (loading) {
     return (
@@ -53,7 +72,7 @@ export function KanbanBoard({
   return (
     <div className="h-full">
       <KanbanHeader 
-        projects={projects}
+        projects={localProjects}
         showStatusManager={showStatusManager}
         onStatusManagerToggle={setShowStatusManager}
       />
