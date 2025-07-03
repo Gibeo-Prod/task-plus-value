@@ -27,7 +27,8 @@ export const useAppState = () => {
     toggleImportant,
     updateTask,
     archiveClient,
-    deleteClient
+    deleteClient,
+    fetchProjects
   } = useSupabaseData()
 
   const [selectedView, setSelectedView] = useState("myday")
@@ -93,6 +94,7 @@ export const useAppState = () => {
     updateTask,
     archiveClient,
     deleteClient,
+    fetchProjects,
     getClientById,
     toast
   }

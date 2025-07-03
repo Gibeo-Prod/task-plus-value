@@ -22,6 +22,7 @@ interface KanbanBoardProps {
     dueDate?: string
   }) => void
   onUpdateProject?: (projectId: string, updates: Partial<Project>) => void
+  onRefreshProjects?: () => void
 }
 
 export function KanbanBoard({ 
@@ -29,7 +30,8 @@ export function KanbanBoard({
   clients, 
   onProjectClick, 
   onAddProject,
-  onUpdateProject 
+  onUpdateProject,
+  onRefreshProjects 
 }: KanbanBoardProps) {
   const { statuses, loading } = useProjectStatuses()
   const [showStatusManager, setShowStatusManager] = useState(false)
@@ -52,7 +54,12 @@ export function KanbanBoard({
     }
   }
 
-  const { handleDragEnd } = useKanbanDragDrop(localProjects, statuses, handleUpdateProject)
+  const { handleDragEnd } = useKanbanDragDrop(
+    localProjects, 
+    statuses, 
+    handleUpdateProject,
+    onRefreshProjects
+  )
 
   console.log('KanbanBoard - Projects received:', localProjects.length)
   console.log('KanbanBoard - Projects data:', localProjects.map(p => ({ name: p.name, status: p.status })))

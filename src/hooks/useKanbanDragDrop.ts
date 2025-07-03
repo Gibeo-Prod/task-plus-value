@@ -9,7 +9,8 @@ import { toast } from 'sonner'
 export const useKanbanDragDrop = (
   projects: Project[],
   statuses: ProjectStatus[],
-  onUpdateProject?: (projectId: string, updates: Partial<Project>) => void
+  onUpdateProject?: (projectId: string, updates: Partial<Project>) => void,
+  onRefreshProjects?: () => void
 ) => {
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result
@@ -47,6 +48,11 @@ export const useKanbanDragDrop = (
         .eq('id', project.id)
 
       if (error) throw error
+
+      // Refresh projects from server to ensure persistence
+      if (onRefreshProjects) {
+        onRefreshProjects()
+      }
 
       toast.success(`Projeto movido para "${newStatus.name}"`)
     } catch (error) {

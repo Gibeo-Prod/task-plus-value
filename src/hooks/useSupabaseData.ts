@@ -43,6 +43,7 @@ export const useSupabaseData = () => {
     toggleImportant: tasksData.toggleImportant,
     updateTask: tasksData.updateTask,
     archiveClient: clientsData.archiveClient,
-    deleteClient: clientsData.deleteClient
+    deleteClient: clientsData.deleteClient,
+    fetchProjects: projectsData.fetchProjects
   }
 }
