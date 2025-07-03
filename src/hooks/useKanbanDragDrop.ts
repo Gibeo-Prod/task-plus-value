@@ -24,29 +24,58 @@ export const useKanbanDragDrop = (
 
     // Encontrar o projeto
     const project = projects.find(p => p.id === draggableId)
-    if (!project) return
+    if (!project) {
+      console.error('Project not found:', draggableId)
+      return
+    }
 
     // Encontrar o novo status
     const newStatus = statuses.find(s => s.name === destStatus)
-    if (!newStatus) return
+    if (!newStatus) {
+      console.error('Status not found:', destStatus)
+      return
+    }
 
-    console.log(`Dragging project ${project.name} from ${sourceStatus} to ${destStatus}`)
+    console.log(`\n=== DRAG AND DROP ===`)
+    console.log(`Project: ${project.name}`)
+    console.log(`From: ${sourceStatus} -> To: ${destStatus}`)
+    console.log(`Status object:`, newStatus)
 
     // Atualizar localmente primeiro para feedback imediato
     if (onUpdateProject) {
+      console.log('Updating project locally with status:', destStatus)
       onUpdateProject(project.id, { status: destStatus })
     }
 
     try {
-      // Mapear o status para o formato do banco
-      const dbStatus = mapStatusToDb(destStatus)
+      // Determinar qual valor usar no banco de dados
+      let dbStatusValue: string
       
-      console.log(`Updating project ${project.name} from ${sourceStatus} to ${destStatus} (DB: ${dbStatus})`)
+      // Se o status de destino é um dos status padrão mapeados, usar o código do banco
+      const defaultStatusMapping = {
+        'Planejamento': 'new',
+        'Em Andamento': 'in_progress',
+        'Em Revisão': 'in_review',
+        'Concluído': 'completed',
+        'Pausado': 'on_hold',
+        'Cancelado': 'cancelled'
+      }
+      
+      if (defaultStatusMapping[destStatus as keyof typeof defaultStatusMapping]) {
+        dbStatusValue = defaultStatusMapping[destStatus as keyof typeof defaultStatusMapping]
+        console.log(`Using mapped DB status: ${destStatus} -> ${dbStatusValue}`)
+      } else {
+        // Status personalizado - usar o nome diretamente
+        dbStatusValue = destStatus
+        console.log(`Using custom status directly: ${dbStatusValue}`)
+      }
+      
+      console.log(`Updating project ${project.name} in DB with status: ${dbStatusValue}`)
       
       // Atualizar no banco
       const { error } = await supabase
         .from('projects')
-        .update({ status: dbStatus })
+        .update({ status: dbStatusValue })
         .eq('id', project.id)
 
       if (error) {
@@ -54,10 +83,11 @@ export const useKanbanDragDrop = (
         throw error
       }
 
-      console.log(`Successfully updated project ${project.name} to status ${dbStatus}`)
+      console.log(`✓ Successfully updated project ${project.name} to status ${dbStatusValue}`)
 
       // Refresh projects from server to ensure persistence
       if (onRefreshProjects) {
+        console.log('Refreshing projects from server...')
         await onRefreshProjects()
       }
 
@@ -66,6 +96,7 @@ export const useKanbanDragDrop = (
       console.error('Error updating project status:', error)
       // Reverter a mudança local em caso de erro
       if (onUpdateProject) {
+        console.log('Reverting local changes due to error')
         onUpdateProject(project.id, { status: sourceStatus })
       }
       toast.error('Erro ao atualizar status do projeto')
