@@ -31,7 +31,7 @@ export const mapProjectFromSupabase = (project: any): Project => {
     description: project.description,
     startDate: project.start_date,
     dueDate: project.due_date,
-    status: project.status, // Manter o status original do banco de dados
+    status: project.status, // Manter o status original do banco de dados (pode ser personalizado)
     priority: project.priority as 'low' | 'medium' | 'high',
     tasks: 0 // Will be calculated separately
   }
@@ -76,9 +76,17 @@ export const mapStatusToDb = (frontendStatus: string): string => {
     'Pausado': 'on_hold',
     'Cancelado': 'cancelled'
   }
-  const mappedStatus = statusMap[frontendStatus as keyof typeof statusMap] || 'new'
-  console.log(`Mapping frontend status '${frontendStatus}' to DB status '${mappedStatus}'`)
-  return mappedStatus
+  
+  // Se é um status padrão, mapear para o código do banco
+  if (statusMap[frontendStatus as keyof typeof statusMap]) {
+    const mappedStatus = statusMap[frontendStatus as keyof typeof statusMap]
+    console.log(`Mapping frontend status '${frontendStatus}' to DB status '${mappedStatus}'`)
+    return mappedStatus
+  }
+  
+  // Se é um status personalizado, usar o nome diretamente
+  console.log(`Using custom status directly: '${frontendStatus}'`)
+  return frontendStatus
 }
 
 export const mapStatusFromDb = (dbStatus: string): string => {
@@ -90,7 +98,15 @@ export const mapStatusFromDb = (dbStatus: string): string => {
     'on_hold': 'Pausado',
     'cancelled': 'Cancelado'
   }
-  const mappedStatus = statusMap[dbStatus as keyof typeof statusMap] || dbStatus
-  console.log(`Mapping DB status '${dbStatus}' to frontend status '${mappedStatus}'`)
-  return mappedStatus
+  
+  // Se é um código padrão do banco, mapear para o nome do frontend
+  if (statusMap[dbStatus as keyof typeof statusMap]) {
+    const mappedStatus = statusMap[dbStatus as keyof typeof statusMap]
+    console.log(`Mapping DB status '${dbStatus}' to frontend status '${mappedStatus}'`)
+    return mappedStatus
+  }
+  
+  // Se é um status personalizado, usar o nome diretamente
+  console.log(`Using custom status directly: '${dbStatus}'`)
+  return dbStatus
 }

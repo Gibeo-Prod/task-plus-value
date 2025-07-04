@@ -30,7 +30,7 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
         return true
       }
       
-      // Segundo, tentar mapear status do banco para frontend
+      // Segundo, tentar mapear status do banco para frontend (apenas para status padrão)
       const mappedProjectStatus = mapStatusFromDb(project.status)
       console.log(`Mapped project status: "${mappedProjectStatus}"`)
       

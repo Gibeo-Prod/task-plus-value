@@ -2,7 +2,6 @@
 import { DropResult } from '@hello-pangea/dnd'
 import { Project } from '@/types/projects'
 import { ProjectStatus } from '@/types/projects'
-import { mapStatusToDb } from '@/utils/supabaseDataMappers'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
@@ -48,24 +47,25 @@ export const useKanbanDragDrop = (
     }
 
     try {
-      // Determinar qual valor usar no banco de dados
+      // Para status personalizados criados pelo usuário, usar o nome diretamente
+      // Para status padrão do sistema, fazer o mapeamento para códigos do banco
       let dbStatusValue: string
       
-      // Se o status de destino é um dos status padrão mapeados, usar o código do banco
-      const defaultStatusMapping = {
+      const defaultStatusMapping: Record<string, string> = {
         'Planejamento': 'new',
-        'Em Andamento': 'in_progress',
+        'Em Andamento': 'in_progress', 
         'Em Revisão': 'in_review',
         'Concluído': 'completed',
         'Pausado': 'on_hold',
         'Cancelado': 'cancelled'
       }
       
-      if (defaultStatusMapping[destStatus as keyof typeof defaultStatusMapping]) {
-        dbStatusValue = defaultStatusMapping[destStatus as keyof typeof defaultStatusMapping]
+      // Verificar se é um status padrão do sistema
+      if (defaultStatusMapping[destStatus]) {
+        dbStatusValue = defaultStatusMapping[destStatus]
         console.log(`Using mapped DB status: ${destStatus} -> ${dbStatusValue}`)
       } else {
-        // Status personalizado - usar o nome diretamente
+        // Status personalizado - usar o nome exato do status personalizado
         dbStatusValue = destStatus
         console.log(`Using custom status directly: ${dbStatusValue}`)
       }
