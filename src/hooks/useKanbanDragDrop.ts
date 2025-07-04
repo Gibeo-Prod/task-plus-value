@@ -28,9 +28,9 @@ export const useKanbanDragDrop = (
       return
     }
 
-    // Encontrar o novo status
-    const newStatus = statuses.find(s => s.name === destStatus)
-    if (!newStatus) {
+    // Encontrar o novo status na lista de status disponíveis
+    const newStatusObj = statuses.find(s => s.name === destStatus)
+    if (!newStatusObj) {
       console.error('Status not found:', destStatus)
       return
     }
@@ -38,7 +38,7 @@ export const useKanbanDragDrop = (
     console.log(`\n=== DRAG AND DROP ===`)
     console.log(`Project: ${project.name}`)
     console.log(`From: ${sourceStatus} -> To: ${destStatus}`)
-    console.log(`Status object:`, newStatus)
+    console.log(`New status object:`, newStatusObj)
 
     // Atualizar localmente primeiro para feedback imediato
     if (onUpdateProject) {
@@ -47,27 +47,36 @@ export const useKanbanDragDrop = (
     }
 
     try {
-      // Para status personalizados criados pelo usuário, usar o nome diretamente
-      // Para status padrão do sistema, fazer o mapeamento para códigos do banco
+      // Lista de status padrão do sistema (que precisam ser mapeados)
+      const defaultStatuses = [
+        'Planejamento',
+        'Em Andamento', 
+        'Em Revisão',
+        'Concluído',
+        'Pausado',
+        'Cancelado'
+      ]
+      
       let dbStatusValue: string
       
-      const defaultStatusMapping: Record<string, string> = {
-        'Planejamento': 'new',
-        'Em Andamento': 'in_progress', 
-        'Em Revisão': 'in_review',
-        'Concluído': 'completed',
-        'Pausado': 'on_hold',
-        'Cancelado': 'cancelled'
-      }
-      
       // Verificar se é um status padrão do sistema
-      if (defaultStatusMapping[destStatus]) {
+      if (defaultStatuses.includes(destStatus)) {
+        // Status padrão - mapear para código do banco
+        const defaultStatusMapping: Record<string, string> = {
+          'Planejamento': 'new',
+          'Em Andamento': 'in_progress', 
+          'Em Revisão': 'in_review',
+          'Concluído': 'completed',
+          'Pausado': 'on_hold',
+          'Cancelado': 'cancelled'
+        }
+        
         dbStatusValue = defaultStatusMapping[destStatus]
-        console.log(`Using mapped DB status: ${destStatus} -> ${dbStatusValue}`)
+        console.log(`Status padrão detectado: ${destStatus} -> ${dbStatusValue}`)
       } else {
-        // Status personalizado - usar o nome exato do status personalizado
+        // Status personalizado - usar o nome exato
         dbStatusValue = destStatus
-        console.log(`Using custom status directly: ${dbStatusValue}`)
+        console.log(`Status personalizado detectado: usando diretamente "${dbStatusValue}"`)
       }
       
       console.log(`Updating project ${project.name} in DB with status: ${dbStatusValue}`)

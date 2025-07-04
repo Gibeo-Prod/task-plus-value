@@ -9,7 +9,14 @@ export const mapStatusFromDb = (dbStatus: string): string => {
     'on_hold': 'Pausado',
     'cancelled': 'Cancelado'
   }
-  return statusMap[dbStatus as keyof typeof statusMap] || dbStatus
+  
+  // Se é um código padrão do banco, mapear para o nome do frontend
+  if (statusMap[dbStatus as keyof typeof statusMap]) {
+    return statusMap[dbStatus as keyof typeof statusMap]
+  }
+  
+  // Se é um status personalizado, usar o nome diretamente
+  return dbStatus
 }
 
 // Função para organizar projetos por status
@@ -24,20 +31,30 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
       console.log(`Project status from DB: "${project.status}"`)
       console.log(`Status column name: "${status.name}"`)
       
-      // Primeiro, tentar correspondência direta (para status personalizados)
-      if (project.status === status.name) {
-        console.log(`✓ Direct match: "${project.status}" === "${status.name}"`)
-        return true
+      // Lista de status padrão
+      const defaultStatuses = [
+        'Planejamento',
+        'Em Andamento', 
+        'Em Revisão',
+        'Concluído',
+        'Pausado',
+        'Cancelado'
+      ]
+      
+      // Se o status da coluna é padrão, verificar com mapeamento
+      if (defaultStatuses.includes(status.name)) {
+        const mappedProjectStatus = mapStatusFromDb(project.status)
+        console.log(`Status padrão - Mapped project status: "${mappedProjectStatus}"`)
+        
+        const matches = mappedProjectStatus === status.name
+        console.log(`✓ Mapped match: "${mappedProjectStatus}" === "${status.name}" = ${matches}`)
+        return matches
+      } else {
+        // Se o status da coluna é personalizado, comparar diretamente
+        const matches = project.status === status.name
+        console.log(`Status personalizado - Direct match: "${project.status}" === "${status.name}" = ${matches}`)
+        return matches
       }
-      
-      // Segundo, tentar mapear status do banco para frontend (apenas para status padrão)
-      const mappedProjectStatus = mapStatusFromDb(project.status)
-      console.log(`Mapped project status: "${mappedProjectStatus}"`)
-      
-      const matches = mappedProjectStatus === status.name
-      console.log(`✓ Mapped match: "${mappedProjectStatus}" === "${status.name}" = ${matches}`)
-      
-      return matches
     })
     
     console.log(`\nStatus "${status.name}" has ${acc[status.name].length} projects:`, acc[status.name].map(p => p.name))
