@@ -1,4 +1,3 @@
-
 import { Task, TaskCategory, TaskTag, Client, Project } from '@/types/tasks'
 
 export const mapTaskFromSupabase = (task: any): Task => ({
@@ -11,7 +10,7 @@ export const mapTaskFromSupabase = (task: any): Task => ({
   projectId: task.project_id,
   categoryId: null, // Not available in new structure
   priority: task.priority as 'low' | 'medium' | 'high',
-  status: mapStatusFromDb(task.status),
+  status: task.status, // Usar status diretamente sem mapeamento
   assignedTo: task.assigned_to,
   tags: [],
   userId: task.user_id,
@@ -31,7 +30,7 @@ export const mapProjectFromSupabase = (project: any): Project => {
     description: project.description,
     startDate: project.start_date,
     dueDate: project.due_date,
-    status: project.status, // Manter o status original do banco de dados (pode ser personalizado)
+    status: project.status, // Usar o status exato do banco (já padronizado pela migração)
     priority: project.priority as 'low' | 'medium' | 'high',
     tasks: 0 // Will be calculated separately
   }
@@ -68,45 +67,11 @@ export const mapTagFromSupabase = (tag: any): TaskTag => ({
 })
 
 export const mapStatusToDb = (frontendStatus: string): string => {
-  const statusMap = {
-    'Planejamento': 'new',
-    'Em Andamento': 'in_progress',
-    'Em Revisão': 'in_review',
-    'Concluído': 'completed',
-    'Pausado': 'on_hold',
-    'Cancelado': 'cancelled'
-  }
-  
-  // Se é um status padrão, mapear para o código do banco
-  if (statusMap[frontendStatus as keyof typeof statusMap]) {
-    const mappedStatus = statusMap[frontendStatus as keyof typeof statusMap]
-    console.log(`Mapping frontend status '${frontendStatus}' to DB status '${mappedStatus}'`)
-    return mappedStatus
-  }
-  
-  // Se é um status personalizado, usar o nome diretamente
-  console.log(`Using custom status directly: '${frontendStatus}'`)
+  console.log(`Using status directly: '${frontendStatus}'`)
   return frontendStatus
 }
 
 export const mapStatusFromDb = (dbStatus: string): string => {
-  const statusMap = {
-    'new': 'Planejamento',
-    'in_progress': 'Em Andamento',
-    'in_review': 'Em Revisão',
-    'completed': 'Concluído',
-    'on_hold': 'Pausado',
-    'cancelled': 'Cancelado'
-  }
-  
-  // Se é um código padrão do banco, mapear para o nome do frontend
-  if (statusMap[dbStatus as keyof typeof statusMap]) {
-    const mappedStatus = statusMap[dbStatus as keyof typeof statusMap]
-    console.log(`Mapping DB status '${dbStatus}' to frontend status '${mappedStatus}'`)
-    return mappedStatus
-  }
-  
-  // Se é um status personalizado, usar o nome diretamente
-  console.log(`Using custom status directly: '${dbStatus}'`)
+  console.log(`Using status directly: '${dbStatus}'`)
   return dbStatus
 }
