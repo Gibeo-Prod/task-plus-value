@@ -41,7 +41,7 @@ export const useKanbanDragDrop = (
     try {
       console.log(`Updating project ${project.name} in DB with status: ${destStatus}`)
       
-      // Agora sempre usamos o nome exato do status (sem mapeamento)
+      // Sempre usar o nome exato do status de destino
       const { error } = await supabase
         .from('projects')
         .update({ status: destStatus })
