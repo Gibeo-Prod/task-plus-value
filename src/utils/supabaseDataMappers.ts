@@ -1,3 +1,4 @@
+
 import { Task, TaskCategory, TaskTag, Client, Project } from '@/types/tasks'
 
 export const mapTaskFromSupabase = (task: any): Task => ({
@@ -20,7 +21,12 @@ export const mapTaskFromSupabase = (task: any): Task => ({
 })
 
 export const mapProjectFromSupabase = (project: any): Project => {
-  console.log('Mapping project from Supabase:', { id: project.id, name: project.name, status: project.status })
+  console.log('Mapping project from Supabase:', { 
+    id: project.id, 
+    name: project.name, 
+    status: project.status,
+    rawProject: project 
+  })
   
   const mappedProject = {
     id: project.id,
@@ -30,12 +36,12 @@ export const mapProjectFromSupabase = (project: any): Project => {
     description: project.description,
     startDate: project.start_date,
     dueDate: project.due_date,
-    status: project.status, // Usar o status exato do banco (já padronizado pela migração)
+    status: project.status, // Usar o status exato do banco
     priority: project.priority as 'low' | 'medium' | 'high',
     tasks: 0 // Will be calculated separately
   }
   
-  console.log('Mapped project:', mappedProject)
+  console.log('Mapped project result:', mappedProject)
   return mappedProject
 }
 
@@ -66,12 +72,13 @@ export const mapTagFromSupabase = (tag: any): TaskTag => ({
   userId: tag.user_id
 })
 
+// Funções de mapeamento de status - mantém o valor exato
 export const mapStatusToDb = (frontendStatus: string): string => {
-  console.log(`Using status directly: '${frontendStatus}'`)
+  console.log(`Mapping status to DB: '${frontendStatus}' -> '${frontendStatus}' (no mapping)`)
   return frontendStatus
 }
 
 export const mapStatusFromDb = (dbStatus: string): string => {
-  console.log(`Using status directly: '${dbStatus}'`)
+  console.log(`Mapping status from DB: '${dbStatus}' -> '${dbStatus}' (no mapping)`)
   return dbStatus
 }

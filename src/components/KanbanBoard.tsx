@@ -39,11 +39,13 @@ export function KanbanBoard({
 
   // Sincronizar projetos locais quando os projetos externos mudarem
   useEffect(() => {
+    console.log('🔄 Syncing projects in KanbanBoard:', projects.length)
     setLocalProjects(projects)
   }, [projects])
 
   // Função para atualizar projetos localmente
   const handleUpdateProject = (projectId: string, updates: Partial<Project>) => {
+    console.log('📝 Local project update:', { projectId, updates })
     setLocalProjects(prev => prev.map(project => 
       project.id === projectId ? { ...project, ...updates } : project
     ))
@@ -61,9 +63,10 @@ export function KanbanBoard({
     onRefreshProjects
   )
 
-  console.log('KanbanBoard - Projects received:', localProjects.length)
-  console.log('KanbanBoard - Projects data:', localProjects.map(p => ({ name: p.name, status: p.status })))
-  console.log('KanbanBoard - Statuses:', statuses.map(s => s.name))
+  console.log('🏗️ KanbanBoard render - Projects:', localProjects.length)
+  console.log('🏗️ KanbanBoard render - Statuses:', statuses.length)
+  console.log('📊 Projects by status preview:', localProjects.map(p => ({ name: p.name, status: p.status })))
+  console.log('📋 Available statuses:', statuses.map(s => s.name))
 
   // Organizar projetos por status usando projetos locais
   const projectsByStatus = organizeProjectsByStatus(localProjects, statuses)
@@ -91,7 +94,7 @@ export function KanbanBoard({
           <div className="flex gap-6 h-full overflow-x-auto pb-4">
             {statuses.map((status) => {
               const statusProjects = projectsByStatus[status.name] || []
-              console.log(`Rendering column ${status.name} with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
+              console.log(`🏷️ Rendering column "${status.name}" with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
               
               return (
                 <KanbanColumn
