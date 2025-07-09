@@ -131,6 +131,98 @@ export const useChecklistTemplates = () => {
     }
   }
 
+  const updateTemplate = async (templateId: string, templateData: { name: string; description?: string }) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('checklist_templates')
+        .update({
+          name: templateData.name,
+          description: templateData.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', templateId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      await fetchTemplates()
+    } catch (error) {
+      console.error('Error updating template:', error)
+      throw error
+    }
+  }
+
+  const updateTemplateItem = async (itemId: string, itemData: { title: string; description?: string; category: string }) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('checklist_template_items')
+        .update({
+          title: itemData.title,
+          description: itemData.description,
+          category: itemData.category
+        })
+        .eq('id', itemId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error updating template item:', error)
+      throw error
+    }
+  }
+
+  const addTemplateItem = async (templateId: string, itemData: { title: string; description?: string; category: string }) => {
+    if (!user) return
+
+    try {
+      // Get the highest sort_order for this template
+      const { data: existingItems, error: fetchError } = await supabase
+        .from('checklist_template_items')
+        .select('sort_order')
+        .eq('template_id', templateId)
+        .order('sort_order', { ascending: false })
+        .limit(1)
+
+      if (fetchError) throw fetchError
+
+      const nextSortOrder = existingItems && existingItems.length > 0 ? existingItems[0].sort_order + 1 : 1
+
+      const { error } = await supabase
+        .from('checklist_template_items')
+        .insert({
+          template_id: templateId,
+          title: itemData.title,
+          description: itemData.description,
+          category: itemData.category,
+          sort_order: nextSortOrder
+        })
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error adding template item:', error)
+      throw error
+    }
+  }
+
+  const deleteTemplateItem = async (itemId: string) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('checklist_template_items')
+        .delete()
+        .eq('id', itemId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error deleting template item:', error)
+      throw error
+    }
+  }
+
   const getDefaultTemplate = () => {
     return templates.find(t => t.is_default) || templates[0]
   }
@@ -146,6 +238,10 @@ export const useChecklistTemplates = () => {
     fetchTemplateItems,
     createTemplateFromItems,
     applyTemplateToProject,
+    updateTemplate,
+    updateTemplateItem,
+    addTemplateItem,
+    deleteTemplateItem,
     getDefaultTemplate
   }
 }
