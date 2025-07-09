@@ -53,10 +53,11 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
   }, {} as Record<string, ChecklistTemplateItem[]>)
 
   const categoryColors = {
-    'Ambiente': 'bg-blue-100 text-blue-800',
-    'Móveis': 'bg-green-100 text-green-800',
-    'Elétrica': 'bg-yellow-100 text-yellow-800',
-    'Plantas': 'bg-purple-100 text-purple-800'
+    'ESTRUTURA': 'bg-blue-100 text-blue-800',
+    'PROJETO': 'bg-green-100 text-green-800',
+    'ACABAMENTOS': 'bg-orange-100 text-orange-800',
+    'REVISÃO': 'bg-purple-100 text-purple-800',
+    'PRODUÇÃO': 'bg-red-100 text-red-800'
   }
 
   if (loading) {
