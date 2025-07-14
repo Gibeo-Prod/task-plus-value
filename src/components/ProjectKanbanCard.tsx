@@ -1,16 +1,36 @@
 
-import { Calendar, DollarSign, AlertCircle, Grip, User } from 'lucide-react'
+import { Calendar, DollarSign, AlertCircle, Grip, User, MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Project, Client } from '@/types/projects'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface ProjectKanbanCardProps {
   project: Project
   client?: Client
   onClick: () => void
+  onEditProject: (project: Project) => void
+  onDeleteProject: (projectId: string) => void
   dragHandleProps?: DraggableProvidedDragHandleProps
 }
 
@@ -18,6 +38,8 @@ export function ProjectKanbanCard({
   project, 
   client, 
   onClick, 
+  onEditProject,
+  onDeleteProject,
   dragHandleProps 
 }: ProjectKanbanCardProps) {
   const isOverdue = project.dueDate && isAfter(new Date(), parseISO(project.dueDate))
@@ -42,7 +64,7 @@ export function ProjectKanbanCard({
 
   return (
     <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-transparent hover:border-l-blue-500"
+      className="group cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-transparent hover:border-l-blue-500"
       onClick={onClick}
     >
       <CardContent className="p-4">
@@ -59,8 +81,55 @@ export function ProjectKanbanCard({
             )}
           </div>
           
-          <div {...dragHandleProps} className="ml-2 cursor-grab active:cursor-grabbing">
-            <Grip className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-1">
+            <AlertDialog>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditProject(project); }}>
+                    <Edit className="h-3 w-3 mr-2" />
+                    Editar
+                  </DropdownMenuItem>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="h-3 w-3 mr-2" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir o projeto "{project.name}"? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDeleteProject(project.id)}>
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
+            <div {...dragHandleProps} className="ml-1 cursor-grab active:cursor-grabbing">
+              <Grip className="h-4 w-4 text-muted-foreground" />
+            </div>
           </div>
         </div>
 

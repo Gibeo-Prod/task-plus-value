@@ -142,6 +142,8 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
           projects={projects}
           clients={[client]}
           onProjectClick={onProjectClick}
+          onEditProject={handleEditProject}
+          onDeleteProject={handleDeleteProject}
           onAddProject={(clientId, projectData) => onAddProject(projectData)}
         />
       ) : (

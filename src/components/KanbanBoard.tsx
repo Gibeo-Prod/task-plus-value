@@ -12,6 +12,8 @@ interface KanbanBoardProps {
   projects: Project[]
   clients: Client[]
   onProjectClick: (project: Project) => void
+  onEditProject: (project: Project) => void
+  onDeleteProject: (projectId: string) => void
   onAddProject: (clientId: string, projectData: {
     name: string
     description?: string
@@ -29,6 +31,8 @@ export function KanbanBoard({
   projects, 
   clients, 
   onProjectClick, 
+  onEditProject,
+  onDeleteProject,
   onAddProject,
   onUpdateProject,
   onRefreshProjects 
@@ -103,6 +107,8 @@ export function KanbanBoard({
                   projects={statusProjects}
                   clients={clients}
                   onProjectClick={onProjectClick}
+                  onEditProject={onEditProject}
+                  onDeleteProject={onDeleteProject}
                   onEditStatus={() => setShowStatusManager(true)}
                 />
               )

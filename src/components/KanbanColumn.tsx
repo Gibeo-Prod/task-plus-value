@@ -19,6 +19,8 @@ interface KanbanColumnProps {
   projects: Project[]
   clients: Client[]
   onProjectClick: (project: Project) => void
+  onEditProject: (project: Project) => void
+  onDeleteProject: (projectId: string) => void
   onEditStatus: () => void
 }
 
@@ -27,6 +29,8 @@ export function KanbanColumn({
   projects, 
   clients, 
   onProjectClick,
+  onEditProject,
+  onDeleteProject,
   onEditStatus 
 }: KanbanColumnProps) {
   // Calculate total value of projects in this column
@@ -102,6 +106,8 @@ export function KanbanColumn({
                             project={project}
                             client={clients.find(c => c.id === project.clientId)}
                             onClick={() => onProjectClick(project)}
+                            onEditProject={onEditProject}
+                            onDeleteProject={onDeleteProject}
                             dragHandleProps={provided.dragHandleProps}
                           />
                         </div>
