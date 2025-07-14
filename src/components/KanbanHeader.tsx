@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react';
+import { Settings, Cog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Project } from '@/types/projects';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -25,9 +25,9 @@ export function KanbanHeader({
       <div className="flex items-center gap-2">
         <Dialog open={showStatusManager} onOpenChange={onStatusManagerToggle}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Gerenciar Status
+            <Button variant="default" size="sm" className="gap-2">
+              <Cog className="h-4 w-4" />
+              Configurações de Status
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
