@@ -103,7 +103,7 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-ms-blue">Projetos de {client.name}</h1>
@@ -138,16 +138,18 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
       </div>
 
       {viewMode === 'kanban' ? (
-        <KanbanBoard
-          projects={projects}
-          clients={[client]}
-          onProjectClick={onProjectClick}
-          onEditProject={handleEditProject}
-          onDeleteProject={handleDeleteProject}
-          onAddProject={(clientId, projectData) => onAddProject(projectData)}
-        />
+        <div className="mt-6">
+          <KanbanBoard
+            projects={projects}
+            clients={[client]}
+            onProjectClick={onProjectClick}
+            onEditProject={handleEditProject}
+            onDeleteProject={handleDeleteProject}
+            onAddProject={(clientId, projectData) => onAddProject(projectData)}
+          />
+        </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 mt-6">
           {projects.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16">
