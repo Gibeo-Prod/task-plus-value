@@ -32,6 +32,8 @@ export const useSupabaseData = () => {
     addTask: tasksData.addTask,
     addClient: clientsData.addClient,
     addProject: projectsData.addProject,
+    updateProject: projectsData.updateProject,
+    deleteProject: projectsData.deleteProject,
     addCategory: categoriesAndTagsData.addCategory,
     addTag: categoriesAndTagsData.addTag,
     addProjectStatus: projectStatusesData.addStatus,

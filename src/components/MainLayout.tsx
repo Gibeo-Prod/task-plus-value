@@ -50,6 +50,16 @@ interface MainLayoutProps {
     startDate?: string
     dueDate?: string
   }) => void
+  onUpdateProject: (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => void
+  onDeleteProject: (projectId: string) => void
   onArchiveClient: (clientId: string) => void
   onDeleteClient: (clientId: string) => void
   
@@ -77,6 +87,8 @@ export function MainLayout({
   onAddTag,
   onAddClient,
   onAddProject,
+  onUpdateProject,
+  onDeleteProject,
   onArchiveClient,
   onDeleteClient,
   onViewChange,
@@ -143,6 +155,8 @@ export function MainLayout({
             onAddCategory={onAddCategory}
             onAddTag={onAddTag}
             onAddProject={onAddProject}
+            onUpdateProject={onUpdateProject}
+            onDeleteProject={onDeleteProject}
             onProjectClick={onProjectClick}
             onBackToClient={onBackToClient}
           />

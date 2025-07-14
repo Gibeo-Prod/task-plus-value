@@ -104,10 +104,75 @@ export const useProjects = () => {
     fetchProjects()
   }, [user])
 
+  const updateProject = async (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          name: projectData.name,
+          description: projectData.description,
+          value: projectData.value,
+          status: projectData.status,
+          priority: projectData.priority,
+          start_date: projectData.startDate,
+          due_date: projectData.dueDate,
+        })
+        .eq('id', projectId)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      const updatedProject = mapProjectFromSupabase(data)
+      setProjects(prev => prev.map(p => p.id === projectId ? updatedProject : p))
+      
+      toast.success('Projeto atualizado com sucesso!')
+      return updatedProject
+    } catch (error) {
+      console.error('Error updating project:', error)
+      toast.error('Erro ao atualizar projeto')
+      throw error
+    }
+  }
+
+  const deleteProject = async (projectId: string) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      toast.success('Projeto excluído com sucesso!')
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      toast.error('Erro ao excluir projeto')
+      throw error
+    }
+  }
+
   return {
     projects,
     loading,
     fetchProjects,
-    addProject
+    addProject,
+    updateProject,
+    deleteProject
   }
 }

@@ -50,6 +50,8 @@ const Index = () => {
       onAddTag={appActions.addTag}
       onAddClient={appActions.addClient}
       onAddProject={appActions.addProject}
+      onUpdateProject={appState.updateProject}
+      onDeleteProject={appState.deleteProject}
       onArchiveClient={handleArchiveClient}
       onDeleteClient={handleDeleteClient}
       

@@ -39,6 +39,16 @@ interface MainContentProps {
     startDate?: string
     dueDate?: string
   }) => void
+  onUpdateProject: (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => void
+  onDeleteProject: (projectId: string) => void
   onProjectClick: (project: Project) => void
   onBackToClient: () => void
 }
@@ -59,6 +69,8 @@ export function MainContent({
   onAddCategory,
   onAddTag,
   onAddProject,
+  onUpdateProject,
+  onDeleteProject,
   onProjectClick,
   onBackToClient,
 }: MainContentProps) {
@@ -119,6 +131,8 @@ export function MainContent({
         client={currentClient}
         projects={clientProjects}
         onAddProject={(projectData) => onAddProject(currentClient.id, projectData)}
+        onUpdateProject={onUpdateProject}
+        onDeleteProject={onDeleteProject}
         onProjectClick={onProjectClick}
       />
     )

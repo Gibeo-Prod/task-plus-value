@@ -16,6 +16,8 @@ export const useAppState = () => {
     addTask,
     addClient,
     addProject: addProjectSupabase,
+    updateProject: updateProjectSupabase,
+    deleteProject: deleteProjectSupabase,
     addCategory,
     addTag,
     addProjectStatus,
@@ -50,6 +52,22 @@ export const useAppState = () => {
     return addProjectSupabase(clientId, restData)
   }
 
+  const updateProject = (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => {
+    return updateProjectSupabase(projectId, projectData)
+  }
+
+  const deleteProject = (projectId: string) => {
+    return deleteProjectSupabase(projectId)
+  }
+
   // Helper function to get client by ID
   const getClientById = (clientId: string): Client | undefined => {
     return clients.find(client => client.id === clientId)
@@ -82,6 +100,8 @@ export const useAppState = () => {
     addTask,
     addClient,
     addProject,
+    updateProject,
+    deleteProject,
     addCategory,
     addTag,
     addProjectStatus,

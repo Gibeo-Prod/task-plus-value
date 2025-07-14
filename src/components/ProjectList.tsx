@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { Plus, LayoutGrid, List } from "lucide-react"
+import { Plus, LayoutGrid, List, Edit, Trash2, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,8 @@ import { KanbanBoard } from "@/components/KanbanBoard"
 import { Project, Client } from "@/types/tasks"
 import { format, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 interface ProjectListProps {
   client: Client
@@ -23,13 +25,24 @@ interface ProjectListProps {
     startDate?: string
     dueDate?: string
   }) => void
+  onUpdateProject: (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }) => void
+  onDeleteProject: (projectId: string) => void
   onProjectClick: (project: Project) => void
 }
 
 type ViewMode = 'list' | 'kanban'
 
-export function ProjectList({ client, projects, onAddProject, onProjectClick }: ProjectListProps) {
+export function ProjectList({ client, projects, onAddProject, onUpdateProject, onDeleteProject, onProjectClick }: ProjectListProps) {
   const [showForm, setShowForm] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('kanban')
 
   const handleProjectSubmit = (projectData: {
@@ -41,8 +54,22 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
     startDate?: string
     dueDate?: string
   }) => {
-    onAddProject(projectData)
+    if (editingProject) {
+      onUpdateProject(editingProject.id, projectData)
+      setEditingProject(null)
+    } else {
+      onAddProject(projectData)
+    }
     setShowForm(false)
+  }
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project)
+    setShowForm(true)
+  }
+
+  const handleDeleteProject = (projectId: string) => {
+    onDeleteProject(projectId)
   }
 
   const getPriorityColor = (priority: string) => {
@@ -136,29 +163,65 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
             projects.map((project) => (
               <Card 
                 key={project.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => onProjectClick(project)}
+                className="hover:shadow-md transition-shadow"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                    <div className="flex-1 cursor-pointer" onClick={() => onProjectClick(project)}>
                       <CardTitle className="text-lg">{project.name}</CardTitle>
                       {project.description && (
                         <p className="text-sm text-gray-600 mt-1">{project.description}</p>
                       )}
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
-                      </Badge>
-                      <Badge className={getPriorityColor(project.priority)}>
-                        {getPriorityText(project.priority)}
-                      </Badge>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={getStatusColor(project.status)}>
+                          {project.status}
+                        </Badge>
+                        <Badge className={getPriorityColor(project.priority)}>
+                          {getPriorityText(project.priority)}
+                        </Badge>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditProject(project)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o projeto "{project.name}"? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteProject(project.id)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardHeader>
                 
-                <CardContent>
+                <CardContent className="cursor-pointer" onClick={() => onProjectClick(project)}>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <p className="text-sm text-gray-600">Valor</p>
@@ -204,7 +267,11 @@ export function ProjectList({ client, projects, onAddProject, onProjectClick }: 
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <ProjectForm
               onSubmit={handleProjectSubmit}
-              onCancel={() => setShowForm(false)}
+              onCancel={() => {
+                setShowForm(false)
+                setEditingProject(null)
+              }}
+              project={editingProject}
             />
           </div>
         </div>

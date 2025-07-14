@@ -18,17 +18,27 @@ interface ProjectFormProps {
     dueDate?: string
   }) => void
   onCancel: () => void
+  project?: {
+    id: string
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+  }
 }
 
-export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
+export function ProjectForm({ onSubmit, onCancel, project }: ProjectFormProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    value: 0,
-    status: 'new',
-    priority: 'medium' as 'low' | 'medium' | 'high',
-    startDate: '',
-    dueDate: ''
+    name: project?.name || '',
+    description: project?.description || '',
+    value: project?.value || 0,
+    status: project?.status || 'new',
+    priority: (project?.priority || 'medium') as 'low' | 'medium' | 'high',
+    startDate: project?.startDate || '',
+    dueDate: project?.dueDate || ''
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +57,7 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Novo Projeto</CardTitle>
+        <CardTitle>{project ? 'Editar Projeto' : 'Novo Projeto'}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -137,7 +147,7 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" className="flex-1">
-              Criar Projeto
+              {project ? 'Atualizar Projeto' : 'Criar Projeto'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancelar
