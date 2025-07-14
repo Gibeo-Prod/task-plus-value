@@ -1,12 +1,12 @@
 
 import { useState } from "react"
-import { Plus, Edit, Trash2, MoreHorizontal } from "lucide-react"
+import { Plus, LayoutGrid, List, Edit, Trash2, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ProjectForm } from "@/components/ProjectForm"
-
+import { KanbanBoard } from "@/components/KanbanBoard"
 import { Project, Client } from "@/types/tasks"
 import { format, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -38,9 +38,12 @@ interface ProjectListProps {
   onProjectClick: (project: Project) => void
 }
 
+type ViewMode = 'list' | 'kanban'
+
 export function ProjectList({ client, projects, onAddProject, onUpdateProject, onDeleteProject, onProjectClick }: ProjectListProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban')
 
   const handleProjectSubmit = (projectData: {
     name: string
@@ -109,13 +112,42 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
           </p>
         </div>
         
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Projeto
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex bg-muted rounded-lg p-1">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Projeto
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4">
+      {viewMode === 'kanban' ? (
+        <KanbanBoard
+          projects={projects}
+          clients={[client]}
+          onProjectClick={onProjectClick}
+          onEditProject={handleEditProject}
+          onDeleteProject={handleDeleteProject}
+          onAddProject={(clientId, projectData) => onAddProject(projectData)}
+        />
+      ) : (
+        <div className="grid gap-4">
           {projects.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16">
@@ -230,6 +262,7 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
             ))
           )}
         </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
