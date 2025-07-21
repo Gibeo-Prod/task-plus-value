@@ -9,6 +9,10 @@ const Index = () => {
   const appActions = useAppActions(appState)
 
   const handleViewChange = (view: string) => {
+    if (view === 'production') {
+      window.location.href = '/projetos-producao'
+      return
+    }
     appState.setSelectedView(view)
     appState.setSelectedProject(null) // Reset selected project when changing view
   }

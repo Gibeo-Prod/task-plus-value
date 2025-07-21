@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ProjectInvite from "./pages/ProjectInvite";
 import ProjectView from "./pages/ProjectView";
+import ProductionProjects from "./pages/ProductionProjects";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/projeto-convite/:token" element={<ProjectInvite />} />
             <Route path="/projeto-visualizar/:token" element={<ProjectView />} />
+            <Route path="/projetos-producao" element={
+              <ProtectedRoute>
+                <ProductionProjects />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />

@@ -1,5 +1,5 @@
 
-import { CalendarDays, CheckSquare, Star, FileText, Plus, Building2, Users, Settings } from "lucide-react"
+import { CalendarDays, CheckSquare, Star, FileText, Plus, Building2, Users, Settings, Package } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +43,11 @@ const items = [
     title: "Templates",
     value: "templates",
     icon: Settings,
+  },
+  {
+    title: "Em Produção",
+    value: "production",
+    icon: Package,
   },
 ]
 
