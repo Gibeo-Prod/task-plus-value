@@ -15,6 +15,7 @@ import { Project } from '@/types/projects';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductionProjectEditDialog } from '@/components/ProductionProjectEditDialog';
 import { ProjectQuickActions } from '@/components/ProjectQuickActions';
+import { BackButton } from '@/components/BackButton';
 
 // Função para calcular comissão
 const calculateCommission = (value: number): { rate: number; amount: number; category: string } => {
@@ -177,7 +178,10 @@ export default function ProductionProjects() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Projetos em Produção</h1>
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Projetos em Produção</h1>
+        </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-sm">
             {productionProjects.length} projeto(s)
