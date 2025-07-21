@@ -339,8 +339,12 @@ export default function ProductionProjects() {
                           })}
                         </p>
                       </div>
-                      <ProjectQuickActions project={project} onUpdate={updateProject} />
-                      <ProductionProjectEditDialog project={project} onUpdate={updateProject} />
+                      <ProjectQuickActions project={project} onUpdate={async (id, data) => {
+                        await updateProject(id, data);
+                      }} />
+                      <ProductionProjectEditDialog project={project} onUpdate={async (id, data) => {
+                        await updateProject(id, data);
+                      }} />
                     </div>
                   </div>
                 );
