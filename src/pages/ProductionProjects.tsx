@@ -31,7 +31,7 @@ export default function ProductionProjects() {
   const [sortBy, setSortBy] = useState<'value' | 'commission' | 'date'>('value');
   const [completedProjectsWithCommission, setCompletedProjectsWithCommission] = useState<(Project & { commission: ReturnType<typeof calculateCommission> })[]>([]);
 
-  const productionProjects = projects.filter(project => project.status === 'Em produção');
+  const productionProjects = projects.filter(project => project.status === 'Em Produção');
   
   const completedProjects = projects.filter(project => {
     if (project.status !== 'Concluído' || !project.dueDate) return false;
