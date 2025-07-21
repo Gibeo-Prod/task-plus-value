@@ -61,6 +61,10 @@ export default function ProductionProjects() {
     return isWithinInterval(projectDate, { start: monthStart, end: monthEnd });
   });
 
+  console.log('DEBUG - Completed Projects:', completedProjects);
+  console.log('DEBUG - Selected Month:', selectedMonth);
+  console.log('DEBUG - Total projects:', projects.length);
+
   const filteredCompletedProjects = completedProjectsWithCommission.filter(project => {
     const client = clients.find(c => c.id === project.clientId);
     const clientName = client?.name || '';
@@ -89,6 +93,8 @@ export default function ProductionProjects() {
       ...project,
       commission: calculateCommission(Number(project.value))
     }));
+    console.log('DEBUG - Projects with commission:', projectsWithCommission);
+    console.log('DEBUG - Commission calculation:', projectsWithCommission.map(p => ({ name: p.name, value: p.value, commission: p.commission })));
     setCompletedProjectsWithCommission(projectsWithCommission);
   }, [completedProjects]);
 
