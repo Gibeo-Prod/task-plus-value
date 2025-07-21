@@ -89,12 +89,32 @@ export default function ProductionProjects() {
   });
 
   useEffect(() => {
-    const projectsWithCommission = completedProjects.map(project => ({
-      ...project,
-      commission: calculateCommission(Number(project.value))
-    }));
-    console.log('DEBUG - Projects with commission:', projectsWithCommission);
-    console.log('DEBUG - Commission calculation:', projectsWithCommission.map(p => ({ name: p.name, value: p.value, commission: p.commission })));
+    // Calcular o valor total mensal primeiro
+    const totalValueMonth = completedProjects.reduce((sum, project) => sum + Number(project.value), 0);
+    
+    // Calcular a comissão sobre o valor total mensal
+    const monthlyCommission = calculateCommission(totalValueMonth);
+    
+    // Distribuir a comissão proporcionalmente entre os projetos
+    const projectsWithCommission = completedProjects.map(project => {
+      const projectValue = Number(project.value);
+      const proportion = totalValueMonth > 0 ? projectValue / totalValueMonth : 0;
+      const projectCommissionAmount = monthlyCommission.amount * proportion;
+      
+      return {
+        ...project,
+        commission: {
+          rate: monthlyCommission.rate,
+          amount: projectCommissionAmount,
+          category: monthlyCommission.category
+        }
+      };
+    });
+    
+    console.log('DEBUG - Total monthly value:', totalValueMonth);
+    console.log('DEBUG - Monthly commission:', monthlyCommission);
+    console.log('DEBUG - Projects with proportional commission:', projectsWithCommission);
+    
     setCompletedProjectsWithCommission(projectsWithCommission);
   }, [completedProjects]);
 
