@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, DollarSign, Filter, TrendingUp, Download } from 'lucide-react';
+import { Calendar, DollarSign, Filter, TrendingUp, Download, FileText } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
@@ -16,6 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProductionProjectEditDialog } from '@/components/ProductionProjectEditDialog';
 import { ProjectQuickActions } from '@/components/ProjectQuickActions';
 import { BackButton } from '@/components/BackButton';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Função para calcular comissão
 const calculateCommission = (value: number): { rate: number; amount: number; category: string } => {
@@ -161,6 +163,104 @@ export default function ProductionProjects() {
     URL.revokeObjectURL(url);
   };
 
+  const exportToPdf = async () => {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    
+    // Título
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Relatório de Comissões', pageWidth / 2, 20, { align: 'center' });
+    
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Período: ${format(selectedMonth, 'MMMM yyyy', { locale: ptBR })}`, pageWidth / 2, 30, { align: 'center' });
+    
+    // Resumo
+    let yPosition = 45;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('RESUMO DO MÊS', 20, yPosition);
+    
+    yPosition += 10;
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Total de Projetos Concluídos: ${completedProjectsWithCommission.length}`, 20, yPosition);
+    
+    yPosition += 7;
+    pdf.text(`Valor Total Faturado: ${totalValueMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 20, yPosition);
+    
+    yPosition += 7;
+    pdf.text(`Comissão Total: ${totalCommissionMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 20, yPosition);
+    
+    // Breakdown por categoria
+    yPosition += 15;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('BREAKDOWN POR CATEGORIA', 20, yPosition);
+    
+    yPosition += 10;
+    pdf.setFont('helvetica', 'normal');
+    Object.entries(commissionStats).forEach(([category, stats]) => {
+      pdf.text(`${category}: ${stats.totalCommission.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${stats.count} projeto(s))`, 20, yPosition);
+      yPosition += 7;
+    });
+    
+    // Tabela de projetos
+    yPosition += 10;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('PROJETOS DETALHADOS', 20, yPosition);
+    
+    yPosition += 10;
+    
+    // Cabeçalho da tabela
+    const tableHeaders = ['Projeto', 'Cliente', 'Valor', 'Data', 'Comissão'];
+    const colWidths = [50, 40, 30, 25, 30];
+    let xPosition = 20;
+    
+    pdf.setFont('helvetica', 'bold');
+    tableHeaders.forEach((header, index) => {
+      pdf.text(header, xPosition, yPosition);
+      xPosition += colWidths[index];
+    });
+    
+    yPosition += 7;
+    pdf.setFont('helvetica', 'normal');
+    
+    // Dados da tabela
+    sortedCompletedProjects.forEach((project) => {
+      const client = clients.find(c => c.id === project.clientId);
+      
+      // Verificar se precisa de nova página
+      if (yPosition > pageHeight - 30) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      xPosition = 20;
+      const rowData = [
+        project.name.length > 25 ? project.name.substring(0, 25) + '...' : project.name,
+        client?.name || '',
+        Number(project.value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        project.dueDate ? format(new Date(project.dueDate), 'dd/MM/yy') : '',
+        project.commission.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+      ];
+      
+      rowData.forEach((data, index) => {
+        const text = String(data);
+        if (text.length > 15) {
+          pdf.text(text.substring(0, 15) + '...', xPosition, yPosition);
+        } else {
+          pdf.text(text, xPosition, yPosition);
+        }
+        xPosition += colWidths[index];
+      });
+      
+      yPosition += 7;
+    });
+    
+    // Salvar o PDF
+    pdf.save(`relatorio_comissoes_${format(selectedMonth, 'MM_yyyy')}.pdf`);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
@@ -187,10 +287,16 @@ export default function ProductionProjects() {
             {productionProjects.length} projeto(s)
           </Badge>
           {completedProjectsWithCommission.length > 0 && (
-            <Button onClick={exportToCsv} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar CSV
-            </Button>
+            <>
+              <Button onClick={exportToCsv} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </Button>
+              <Button onClick={exportToPdf} variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Salvar PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
