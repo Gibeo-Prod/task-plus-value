@@ -112,6 +112,7 @@ export const useProjects = () => {
     priority: 'low' | 'medium' | 'high'
     startDate?: string
     dueDate?: string
+    notes?: string
   }) => {
     if (!user) return
 
@@ -126,6 +127,7 @@ export const useProjects = () => {
           priority: projectData.priority,
           start_date: projectData.startDate,
           due_date: projectData.dueDate,
+          notes: projectData.notes,
         })
         .eq('id', projectId)
         .eq('user_id', user.id)

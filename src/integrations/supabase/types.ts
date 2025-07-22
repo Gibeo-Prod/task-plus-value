@@ -519,6 +519,7 @@ export type Database = {
           due_date: string | null
           id: string
           name: string
+          notes: string | null
           priority: string
           progress: number
           start_date: string
@@ -536,6 +537,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           name: string
+          notes?: string | null
           priority: string
           progress?: number
           start_date: string
@@ -553,6 +555,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           name?: string
+          notes?: string | null
           priority?: string
           progress?: number
           start_date?: string

@@ -38,7 +38,8 @@ export const mapProjectFromSupabase = (project: any): Project => {
     dueDate: project.due_date,
     status: project.status, // Usar o status exato do banco
     priority: project.priority as 'low' | 'medium' | 'high',
-    tasks: 0 // Will be calculated separately
+    tasks: 0, // Will be calculated separately
+    notes: project.notes
   }
   
   console.log('Mapped project result:', mappedProject)

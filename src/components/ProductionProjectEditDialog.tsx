@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
@@ -46,6 +47,7 @@ const formSchema = z.object({
   value: z.string().min(1, 'Valor é obrigatório'),
   status: z.string(),
   dueDate: z.date().optional(),
+  notes: z.string().optional(),
 });
 
 interface ProductionProjectEditDialogProps {
@@ -69,6 +71,7 @@ export function ProductionProjectEditDialog({
       value: project.value.toString(),
       status: project.status,
       dueDate: project.dueDate ? new Date(project.dueDate) : undefined,
+      notes: project.notes || '',
     },
   });
 
@@ -83,6 +86,7 @@ export function ProductionProjectEditDialog({
         priority: project.priority,
         startDate: project.startDate,
         dueDate: values.dueDate ? values.dueDate.toISOString().split('T')[0] : undefined,
+        notes: values.notes,
       });
       
       toast.success('Projeto atualizado com sucesso!');
@@ -220,6 +224,25 @@ export function ProductionProjectEditDialog({
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Anotações</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Adicione anotações sobre o projeto..."
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

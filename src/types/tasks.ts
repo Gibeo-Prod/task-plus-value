@@ -66,6 +66,7 @@ export interface Project {
   status: string
   priority: 'low' | 'medium' | 'high'
   tasks: number
+  notes?: string
 }
 
 export interface ProjectInvite {
