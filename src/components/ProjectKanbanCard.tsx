@@ -168,6 +168,12 @@ export function ProjectKanbanCard({
             </div>
           )}
 
+          {project.notes && (
+            <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-sm">
+              <p className="line-clamp-2">{project.notes}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{project.tasks || 0} tarefa{(project.tasks || 0) !== 1 ? 's' : ''}</span>
             {isOverdue && (
