@@ -6,6 +6,7 @@ import { WhatsAppInviteModal } from "@/components/WhatsAppInviteModal"
 import { ProjectHeader } from "@/components/ProjectHeader"
 import { ProjectStats } from "@/components/ProjectStats"
 import { ProjectDueDate } from "@/components/ProjectDueDate"
+import { ProjectNotes } from "@/components/ProjectNotes"
 import { Project, Task, TaskCategory, TaskTag, Client } from "@/types/tasks"
 
 interface ProjectDetailsProps {
@@ -31,6 +32,16 @@ interface ProjectDetailsProps {
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
   onAddCategory: (name: string, color: string, icon: string) => void
   onAddTag: (name: string, color: string) => void
+  onUpdateProject: (projectId: string, projectData: {
+    name: string
+    description?: string
+    value: number
+    status: string
+    priority: 'low' | 'medium' | 'high'
+    startDate?: string
+    dueDate?: string
+    notes?: string
+  }) => void
 }
 
 type TabType = 'tasks' | 'chat'
@@ -49,6 +60,7 @@ export function ProjectDetails({
   onUpdateTask,
   onAddCategory,
   onAddTag,
+  onUpdateProject,
 }: ProjectDetailsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('tasks')
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
@@ -70,6 +82,8 @@ export function ProjectDetails({
       <ProjectStats project={project} tasks={tasks} />
 
       <ProjectDueDate dueDate={project.dueDate} />
+
+      <ProjectNotes project={project} onUpdateProject={onUpdateProject} />
 
       <TaskList
         tasks={tasks}

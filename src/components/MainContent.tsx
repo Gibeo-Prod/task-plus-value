@@ -121,6 +121,7 @@ export function MainContent({
         onUpdateTask={onUpdateTask}
         onAddCategory={onAddCategory}
         onAddTag={onAddTag}
+        onUpdateProject={onUpdateProject}
       />
     )
   }
