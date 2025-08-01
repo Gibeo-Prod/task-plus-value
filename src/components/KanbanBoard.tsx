@@ -84,7 +84,7 @@ export function KanbanBoard({
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       <div className="flex-shrink-0">
         <KanbanHeader 
           projects={localProjects}
@@ -93,28 +93,26 @@ export function KanbanBoard({
         />
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="h-full overflow-x-auto overflow-y-hidden">
-            <div className="flex gap-6 h-full min-w-fit p-4">
-              {statuses.map((status) => {
-                const statusProjects = projectsByStatus[status.name] || []
-                console.log(`🏷️ Rendering column "${status.name}" with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
-                
-                return (
-                  <KanbanColumn
-                    key={status.id}
-                    status={status}
-                    projects={statusProjects}
-                    clients={clients}
-                    onProjectClick={onProjectClick}
-                    onEditProject={onEditProject}
-                    onDeleteProject={onDeleteProject}
-                    onEditStatus={() => setShowStatusManager(true)}
-                  />
-                )
-              })}
-            </div>
+          <div className="flex gap-6 h-full min-w-fit p-4">
+            {statuses.map((status) => {
+              const statusProjects = projectsByStatus[status.name] || []
+              console.log(`🏷️ Rendering column "${status.name}" with ${statusProjects.length} projects:`, statusProjects.map(p => p.name))
+              
+              return (
+                <KanbanColumn
+                  key={status.id}
+                  status={status}
+                  projects={statusProjects}
+                  clients={clients}
+                  onProjectClick={onProjectClick}
+                  onEditProject={onEditProject}
+                  onDeleteProject={onDeleteProject}
+                  onEditStatus={() => setShowStatusManager(true)}
+                />
+              )
+            })}
           </div>
         </DragDropContext>
       </div>
