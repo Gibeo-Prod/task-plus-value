@@ -103,7 +103,7 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header fixo */}
       <div className="flex-shrink-0 p-6 pb-4">
         <div className="flex items-center gap-4">

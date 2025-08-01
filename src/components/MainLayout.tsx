@@ -121,7 +121,7 @@ export function MainLayout({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="h-screen flex w-full bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
         <AppSidebar 
           selectedView={selectedView}
           onViewChange={onViewChange}
@@ -130,7 +130,7 @@ export function MainLayout({
           onArchiveClient={onArchiveClient}
           onDeleteClient={onDeleteClient}
         />
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <TopBar
             selectedView={selectedView}
             selectedProject={selectedProject}
@@ -138,28 +138,29 @@ export function MainLayout({
             onViewChange={onViewChange}
             onBackToClient={onBackToClient}
           />
-          
-          <MainContent
-            tasks={tasks}
-            clients={clients}
-            projects={projects}
-            categories={categories}
-            tags={tags}
-            selectedView={selectedView}
-            selectedProject={selectedProject}
-            onAddTask={onAddTask}
-            onToggleTask={onToggleTask}
-            onDeleteTask={onDeleteTask}
-            onToggleImportant={onToggleImportant}
-            onUpdateTask={onUpdateTask}
-            onAddCategory={onAddCategory}
-            onAddTag={onAddTag}
-            onAddProject={onAddProject}
-            onUpdateProject={onUpdateProject}
-            onDeleteProject={onDeleteProject}
-            onProjectClick={onProjectClick}
-            onBackToClient={onBackToClient}
-          />
+          <div className="flex-1 overflow-hidden">
+            <MainContent
+              tasks={tasks}
+              clients={clients}
+              projects={projects}
+              categories={categories}
+              tags={tags}
+              selectedView={selectedView}
+              selectedProject={selectedProject}
+              onAddTask={onAddTask}
+              onToggleTask={onToggleTask}
+              onDeleteTask={onDeleteTask}
+              onToggleImportant={onToggleImportant}
+              onUpdateTask={onUpdateTask}
+              onAddCategory={onAddCategory}
+              onAddTag={onAddTag}
+              onAddProject={onAddProject}
+              onUpdateProject={onUpdateProject}
+              onDeleteProject={onDeleteProject}
+              onProjectClick={onProjectClick}
+              onBackToClient={onBackToClient}
+            />
+          </div>
         </main>
       </div>
     </SidebarProvider>
