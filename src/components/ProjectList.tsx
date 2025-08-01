@@ -139,10 +139,6 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
           </div>
         </div>
 
-        <div className="mt-4">
-          <h2 className="text-xl font-semibold">Projetos</h2>
-          <p className="text-gray-600">{projects.length} projetos</p>
-        </div>
       </div>
 
       {/* Área de conteúdo com scroll */}
