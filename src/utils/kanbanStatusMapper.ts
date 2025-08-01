@@ -7,7 +7,7 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
 
   // Mapeamento de códigos antigos para nomes novos (fallback)
   const statusCodeMap: Record<string, string> = {
-    'new': 'Planejamento',
+    'new': 'NOVO',
     'in_progress': 'Em Andamento', 
     'in_review': 'Em Revisão',
     'completed': 'Concluído',
@@ -17,7 +17,7 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
 
   // Criar um mapa reverso também (nome para código)
   const reverseStatusMap: Record<string, string> = {
-    'Planejamento': 'new',
+    'NOVO': 'new',
     'Em Andamento': 'in_progress',
     'Em Revisão': 'in_review',
     'Concluído': 'completed',
