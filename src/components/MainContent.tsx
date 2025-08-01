@@ -106,10 +106,27 @@ export function MainContent({
     // Find the client for this project
     const projectClient = clients.find(client => client.id === selectedProject.clientId)
     
+    // If no client is found, show an error or create a fallback
+    if (!projectClient) {
+      return (
+        <div className="flex-1 p-6">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Cliente não encontrado para este projeto.</p>
+            <button 
+              onClick={onBackToClient}
+              className="mt-4 text-primary hover:underline"
+            >
+              Voltar à lista de projetos
+            </button>
+          </div>
+        </div>
+      )
+    }
+    
     return (
       <ProjectDetails
         project={selectedProject}
-        client={projectClient!} // We know this exists because the project references it
+        client={projectClient}
         tasks={projectTasks}
         categories={categories}
         tags={tags}
