@@ -41,37 +41,33 @@ export const useUserRoles = () => {
     if (!isAdmin) return
 
     try {
-      // First get all profiles
+      // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name')
 
       if (profilesError) throw profilesError
 
-      // Then get roles for each user
+      // Get all user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role')
 
       if (rolesError) throw rolesError
 
-      // Get user emails from auth and combine data
-      const usersWithRoles: UserWithRoles[] = []
-      
-      for (const profile of profiles || []) {
-        const { data: authUser } = await supabase.auth.admin.getUserById(profile.id)
+      // Combine the data
+      const usersWithRoles: UserWithRoles[] = (profiles || []).map(profile => {
+        const userRoles = (roles || [])
+          .filter(r => r.user_id === profile.id)
+          .map(r => r.role as UserRole)
         
-        if (authUser.user) {
-          const userRoles = roles?.filter(r => r.user_id === profile.id).map(r => r.role as UserRole) || []
-          
-          usersWithRoles.push({
-            id: profile.id,
-            email: authUser.user.email || '',
-            full_name: profile.full_name,
-            roles: userRoles
-          })
+        return {
+          id: profile.id,
+          email: `user-${profile.id.slice(0, 8)}@sistema.com`, // Placeholder
+          full_name: profile.full_name,
+          roles: userRoles
         }
-      }
+      })
 
       setAllUsers(usersWithRoles)
     } catch (error) {
