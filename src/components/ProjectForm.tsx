@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useProjectStatuses } from "@/hooks/useProjectStatuses"
 
 interface ProjectFormProps {
   onSubmit: (projectData: {
@@ -31,11 +32,16 @@ interface ProjectFormProps {
 }
 
 export function ProjectForm({ onSubmit, onCancel, project }: ProjectFormProps) {
+  const { statuses } = useProjectStatuses()
+  
+  // Use the first status as default if no project is being edited
+  const defaultStatus = statuses.length > 0 ? statuses[0].name : 'NOVO'
+  
   const [formData, setFormData] = useState({
     name: project?.name || '',
     description: project?.description || '',
     value: project?.value || 0,
-    status: project?.status || 'new',
+    status: project?.status || defaultStatus,
     priority: (project?.priority || 'medium') as 'low' | 'medium' | 'high',
     startDate: project?.startDate || '',
     dueDate: project?.dueDate || ''
@@ -99,12 +105,11 @@ export function ProjectForm({ onSubmit, onCancel, project }: ProjectFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="new">Novo</SelectItem>
-                <SelectItem value="in_progress">Em Andamento</SelectItem>
-                <SelectItem value="in_review">Em Revisão</SelectItem>
-                <SelectItem value="completed">Concluído</SelectItem>
-                <SelectItem value="on_hold">Pausado</SelectItem>
-                <SelectItem value="cancelled">Cancelado</SelectItem>
+                {statuses.map((status) => (
+                  <SelectItem key={status.id} value={status.name}>
+                    {status.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
