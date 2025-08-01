@@ -104,14 +104,7 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
 
   return (
     <div className="flex-1 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-ms-blue">Projetos de {client.name}</h1>
-          <p className="text-gray-600 mt-1">
-            {projects.length} projeto{projects.length !== 1 ? 's' : ''} cadastrado{projects.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        
+      <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="flex bg-muted rounded-lg p-1">
             <Button
@@ -134,6 +127,13 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
             <Plus className="h-4 w-4 mr-2" />
             Novo Projeto
           </Button>
+        </div>
+        
+        <div>
+          <h1 className="text-3xl font-bold text-ms-blue">Projetos de {client.name}</h1>
+          <p className="text-gray-600 mt-1">
+            {projects.length} projeto{projects.length !== 1 ? 's' : ''} cadastrado{projects.length !== 1 ? 's' : ''}
+          </p>
         </div>
       </div>
 
