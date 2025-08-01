@@ -14,14 +14,7 @@ export function KanbanHeader({
   onStatusManagerToggle
 }: KanbanHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-4">
-        <h2 className="text-2xl font-bold">Projetos</h2>
-        <span className="text-muted-foreground">
-          {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
-        </span>
-      </div>
-      
+    <div className="flex items-center gap-4 mb-6">
       <div className="flex items-center gap-2">
         <Dialog open={showStatusManager} onOpenChange={onStatusManagerToggle}>
           <DialogTrigger asChild>
@@ -34,6 +27,13 @@ export function KanbanHeader({
             <ProjectStatusManager onClose={() => onStatusManagerToggle(false)} />
           </DialogContent>
         </Dialog>
+      </div>
+      
+      <div className="flex items-center gap-4">
+        <h2 className="text-2xl font-bold">Projetos</h2>
+        <span className="text-muted-foreground">
+          {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
+        </span>
       </div>
     </div>
   );
