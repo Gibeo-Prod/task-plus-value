@@ -48,7 +48,7 @@ export function KanbanColumn({
     <div className="flex-shrink-0 w-80">
       <Droppable droppableId={status.name}>
         {(provided, snapshot) => (
-          <Card className={`h-[calc(100vh-140px)] flex flex-col ${snapshot.isDraggingOver ? 'bg-muted/50' : ''}`}>
+          <Card className={`h-[calc(100vh-180px)] flex flex-col ${snapshot.isDraggingOver ? 'bg-muted/50' : ''}`}>
             <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

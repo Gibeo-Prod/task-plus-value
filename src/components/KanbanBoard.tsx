@@ -84,7 +84,7 @@ export function KanbanBoard({
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-full flex flex-col">
       <div className="flex-shrink-0">
         <KanbanHeader 
           projects={localProjects}
