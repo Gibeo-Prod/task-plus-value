@@ -41,7 +41,7 @@ const ProjectView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-2 sm:py-4 md:py-8 px-2 sm:px-4">
+    <div className="min-h-screen h-full overflow-y-auto bg-gradient-to-br from-blue-50 to-indigo-50 py-2 sm:py-4 md:py-8 px-2 sm:px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
