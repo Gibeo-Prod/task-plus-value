@@ -36,6 +36,8 @@ export const UserManagement: React.FC = () => {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [isInviting, setIsInviting] = useState(false)
+  const [editingUser, setEditingUser] = useState<{ id: string; fullName: string } | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   if (!isAdmin) {
     return null
@@ -91,6 +93,82 @@ export const UserManagement: React.FC = () => {
       })
     } finally {
       setIsInviting(false)
+    }
+  }
+
+  const handleEditUser = async (userId: string, newFullName: string) => {
+    setIsEditing(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: newFullName })
+        .eq('id', userId)
+
+      if (error) throw error
+
+      toast({
+        title: "Usuário atualizado",
+        description: "Informações do usuário foram atualizadas com sucesso",
+      })
+
+      setEditingUser(null)
+      await refreshUsers()
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar usuário",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
+  const handleResetPassword = async (userId: string, newPassword: string, confirmPassword: string) => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Erro",
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: {
+          userId,
+          password: newPassword
+        }
+      })
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao resetar senha')
+      }
+
+      if (data?.error) {
+        throw new Error(data.error)
+      }
+
+      toast({
+        title: "Senha atualizada",
+        description: "Senha do usuário foi atualizada com sucesso",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar senha",
+        description: error.message,
+        variant: "destructive"
+      })
     }
   }
 
@@ -267,7 +345,11 @@ export const UserManagement: React.FC = () => {
                   <div className="flex gap-2 flex-wrap">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setEditingUser({ id: user.id, fullName: user.full_name || '' })}
+                        >
                           <Settings className="w-4 h-4 mr-1" />
                           Editar
                         </Button>
@@ -297,13 +379,34 @@ export const UserManagement: React.FC = () => {
                             <Label htmlFor="editFullName">Nome Completo</Label>
                             <Input
                               id="editFullName"
-                              defaultValue={user.full_name || ''}
+                              value={editingUser?.id === user.id ? editingUser.fullName : user.full_name || ''}
+                              onChange={(e) => 
+                                setEditingUser(prev => 
+                                  prev?.id === user.id 
+                                    ? { ...prev, fullName: e.target.value }
+                                    : { id: user.id, fullName: e.target.value }
+                                )
+                              }
                               placeholder="Nome do usuário"
                             />
                           </div>
                           <div className="flex justify-end space-x-2">
-                            <Button variant="outline">Cancelar</Button>
-                            <Button>Salvar Alterações</Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setEditingUser(null)}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                if (editingUser?.id === user.id) {
+                                  handleEditUser(user.id, editingUser.fullName)
+                                }
+                              }}
+                              disabled={isEditing}
+                            >
+                              {isEditing ? 'Salvando...' : 'Salvar Alterações'}
+                            </Button>
                           </div>
                         </div>
                       </DialogContent>
@@ -330,28 +433,40 @@ export const UserManagement: React.FC = () => {
                             Defina uma nova senha para {user.email}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="newPassword">Nova Senha</Label>
-                            <Input
-                              id="newPassword"
-                              type="password"
-                              placeholder="Digite a nova senha"
-                            />
+                        <form onSubmit={(e) => {
+                          e.preventDefault()
+                          const formData = new FormData(e.currentTarget)
+                          const newPassword = formData.get('newPassword') as string
+                          const confirmPassword = formData.get('confirmPassword') as string
+                          handleResetPassword(user.id, newPassword, confirmPassword)
+                        }}>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="newPassword">Nova Senha</Label>
+                              <Input
+                                id="newPassword"
+                                name="newPassword"
+                                type="password"
+                                placeholder="Digite a nova senha"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                              <Input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type="password"
+                                placeholder="Confirme a nova senha"
+                                required
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                              <Button type="button" variant="outline">Cancelar</Button>
+                              <Button type="submit">Atualizar Senha</Button>
+                            </div>
                           </div>
-                          <div>
-                            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                            <Input
-                              id="confirmPassword"
-                              type="password"
-                              placeholder="Confirme a nova senha"
-                            />
-                          </div>
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline">Cancelar</Button>
-                            <Button>Atualizar Senha</Button>
-                          </div>
-                        </div>
+                        </form>
                       </DialogContent>
                     </Dialog>
                     
