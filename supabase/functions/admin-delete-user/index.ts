@@ -96,29 +96,105 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Delete user using admin client
-    const { data, error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+    // Start cleanup process with detailed logging
+    console.log(`Starting deletion process for user: ${userId}`)
 
-    if (deleteError) {
-      console.error('Error deleting user:', deleteError)
+    try {
+      // Step 1: Delete chat-related data
+      console.log('Deleting chat participants...')
+      await supabaseAdmin.from('chat_participants').delete().eq('user_id', userId)
+      
+      console.log('Deleting chat invitations...')
+      await supabaseAdmin.from('chat_invitations').delete().eq('invited_by', userId)
+      
+      // Step 2: Delete task-related data
+      console.log('Deleting task reminders...')
+      await supabaseAdmin.from('task_reminders').delete().eq('user_id', userId)
+      
+      console.log('Deleting task tag assignments...')
+      const { data: userTasks } = await supabaseAdmin.from('tasks').select('id').eq('user_id', userId)
+      if (userTasks?.length) {
+        const taskIds = userTasks.map(task => task.id)
+        await supabaseAdmin.from('task_tag_assignments').delete().in('task_id', taskIds)
+      }
+      
+      console.log('Deleting tasks...')
+      await supabaseAdmin.from('tasks').delete().eq('user_id', userId)
+      
+      console.log('Deleting task categories...')
+      await supabaseAdmin.from('task_categories').delete().eq('user_id', userId)
+      
+      console.log('Deleting task tags...')
+      await supabaseAdmin.from('task_tags').delete().eq('user_id', userId)
+      
+      console.log('Deleting task statuses...')
+      await supabaseAdmin.from('task_statuses').delete().eq('user_id', userId)
+      
+      // Step 3: Delete project-related data
+      console.log('Deleting project invites...')
+      await supabaseAdmin.from('project_invites').delete().eq('invited_by', userId)
+      
+      console.log('Deleting projects...')
+      await supabaseAdmin.from('projects').delete().eq('user_id', userId)
+      
+      console.log('Deleting project statuses...')
+      await supabaseAdmin.from('project_statuses').delete().eq('user_id', userId)
+      
+      // Step 4: Delete clients
+      console.log('Deleting clients...')
+      await supabaseAdmin.from('clients').delete().eq('user_id', userId)
+      
+      // Step 5: Delete checklist templates and items
+      console.log('Deleting checklist template items...')
+      const { data: userTemplates } = await supabaseAdmin.from('checklist_templates').select('id').eq('user_id', userId)
+      if (userTemplates?.length) {
+        const templateIds = userTemplates.map(template => template.id)
+        await supabaseAdmin.from('checklist_template_items').delete().in('template_id', templateIds)
+      }
+      
+      console.log('Deleting checklist templates...')
+      await supabaseAdmin.from('checklist_templates').delete().eq('user_id', userId)
+      
+      // Step 6: Delete user roles
+      console.log('Deleting user roles...')
+      await supabaseAdmin.from('user_roles').delete().eq('user_id', userId)
+      
+      // Step 7: Delete user profile (this should cascade or be handled last)
+      console.log('Deleting user profile...')
+      await supabaseAdmin.from('profiles').delete().eq('id', userId)
+      
+      // Step 8: Finally delete the auth user
+      console.log('Deleting auth user...')
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+      
+      if (deleteError) {
+        console.error('Error deleting auth user:', deleteError)
+        return new Response(
+          JSON.stringify({ error: `Failed to delete auth user: ${deleteError.message}` }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log(`User and all related data deleted successfully: ${userId}`)
+
       return new Response(
-        JSON.stringify({ error: `Failed to delete user: ${deleteError.message}` }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'User and all related data deleted successfully' 
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+
+    } catch (cleanupError) {
+      console.error('Error during cleanup process:', cleanupError)
+      return new Response(
+        JSON.stringify({ error: `Failed during cleanup: ${cleanupError.message}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    console.log(`User deleted successfully: ${userId}`)
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'User deleted successfully' 
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
 
   } catch (error) {
     console.error('Unexpected error:', error)
