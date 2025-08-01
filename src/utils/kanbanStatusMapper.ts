@@ -5,7 +5,10 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
   console.log('Available statuses:', statuses.map(s => ({ id: s.id, name: s.name })))
   console.log('Projects to organize:', projects.map(p => ({ id: p.id, name: p.name, status: p.status })))
 
-  // Mapeamento de códigos antigos para nomes novos (fallback)
+  // Criar um set de status válidos para busca rápida
+  const validStatusNames = new Set(statuses.map(s => s.name))
+  
+  // Mapeamento de códigos antigos para nomes novos (fallback robusto)
   const statusCodeMap: Record<string, string> = {
     'new': 'NOVO',
     'in_progress': 'Em Andamento', 
@@ -15,14 +18,28 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
     'cancelled': 'Cancelado'
   }
 
-  // Criar um mapa reverso também (nome para código)
-  const reverseStatusMap: Record<string, string> = {
-    'NOVO': 'new',
-    'Em Andamento': 'in_progress',
-    'Em Revisão': 'in_review',
-    'Concluído': 'completed',
-    'Pausado': 'on_hold',
-    'Cancelado': 'cancelled'
+  // Função para normalizar e encontrar o status correto
+  const findValidStatus = (projectStatus: string): string | null => {
+    // 1. Verificação direta
+    if (validStatusNames.has(projectStatus)) {
+      return projectStatus
+    }
+    
+    // 2. Tentar mapeamento de código antigo
+    const mappedStatus = statusCodeMap[projectStatus]
+    if (mappedStatus && validStatusNames.has(mappedStatus)) {
+      return mappedStatus
+    }
+    
+    // 3. Busca case-insensitive
+    const lowerProjectStatus = projectStatus.toLowerCase()
+    for (const validStatus of validStatusNames) {
+      if (validStatus.toLowerCase() === lowerProjectStatus) {
+        return validStatus
+      }
+    }
+    
+    return null
   }
 
   const projectsByStatus = statuses.reduce((acc, status) => {
@@ -31,40 +48,34 @@ export const organizeProjectsByStatus = (projects: any[], statuses: any[]) => {
       console.log(`Project status from DB: "${project.status}"`)
       console.log(`Status column name: "${status.name}"`)
       
-      // 1. Primeiro tenta comparação direta por nome
-      const directMatch = project.status === status.name
-      console.log(`✓ Direct match: "${project.status}" === "${status.name}" = ${directMatch}`)
+      const validStatus = findValidStatus(project.status)
+      const isMatch = validStatus === status.name
       
-      if (directMatch) return true
+      console.log(`✓ Found valid status: "${validStatus}" -> Match: ${isMatch}`)
       
-      // 2. Tenta usar o mapeamento de códigos antigos para nomes novos
-      const mappedStatus = statusCodeMap[project.status]
-      const mappedMatch = mappedStatus === status.name
-      console.log(`✓ Code to name match: "${project.status}" -> "${mappedStatus}" === "${status.name}" = ${mappedMatch}`)
-      
-      if (mappedMatch) return true
-      
-      // 3. Tenta o mapeamento reverso (nome para código) - caso o projeto tenha nome mas o status espere código
-      const reverseStatus = reverseStatusMap[project.status]
-      const reverseMatch = reverseStatus && statusCodeMap[reverseStatus] === status.name
-      console.log(`✓ Reverse match: "${project.status}" -> "${reverseStatus}" -> "${statusCodeMap[reverseStatus]}" === "${status.name}" = ${reverseMatch}`)
-      
-      return reverseMatch || false
+      return isMatch
     })
     
     console.log(`\nStatus "${status.name}" has ${acc[status.name].length} projects:`, acc[status.name].map(p => p.name))
     return acc
   }, {} as Record<string, any[]>)
 
-  // Log de projetos não categorizados
+  // Log de projetos não categorizados e colocá-los na primeira coluna como fallback
   const categorizedProjectIds = Object.values(projectsByStatus).flat().map((p: any) => p.id)
   const uncategorizedProjects = projects.filter(p => !categorizedProjectIds.includes(p.id))
   
   if (uncategorizedProjects.length > 0) {
-    console.warn('\n🚨 UNCATEGORIZED PROJECTS:')
+    console.warn('\n🚨 UNCATEGORIZED PROJECTS (moving to first status):')
     uncategorizedProjects.forEach(p => {
       console.warn(`- ${p.name} (status: "${p.status}")`)
     })
+    
+    // Colocar projetos órfãos na primeira coluna disponível
+    if (statuses.length > 0) {
+      const firstStatus = statuses[0].name
+      projectsByStatus[firstStatus].push(...uncategorizedProjects)
+      console.log(`✓ Moved ${uncategorizedProjects.length} orphaned projects to "${firstStatus}"`)
+    }
   }
 
   console.log('\n=== FINAL ORGANIZATION ===')

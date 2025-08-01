@@ -33,7 +33,13 @@ export const useKanbanDragDrop = (
     const targetStatus = statuses.find(s => s.name === destStatus)
     if (!targetStatus) {
       console.error('Target status not found:', destStatus)
-      toast.error('Status de destino não encontrado')
+      console.error('Available statuses:', statuses.map(s => s.name))
+      toast.error(`Status "${destStatus}" não encontrado. Atualize a página e tente novamente.`)
+      
+      // Recarregar dados para sincronizar
+      if (onRefreshProjects) {
+        onRefreshProjects()
+      }
       return
     }
 
@@ -71,7 +77,7 @@ export const useKanbanDragDrop = (
         console.log('Refreshing projects from server...')
         setTimeout(() => {
           onRefreshProjects()
-        }, 500) // Pequeno delay para garantir que a atualização foi processada
+        }, 100) // Delay reduzido para feedback mais rápido
       }
 
       toast.success(`Projeto "${project.name}" movido para "${destStatus}"`)
@@ -90,7 +96,11 @@ export const useKanbanDragDrop = (
       } else if (error.message?.includes('permission') || error.message?.includes('policy')) {
         toast.error('Erro: Sem permissão para atualizar este projeto')
       } else {
-        toast.error('Erro ao atualizar status do projeto. Tente novamente.')
+        toast.error('Erro ao atualizar status do projeto. Recarregando dados...')
+        // Em caso de erro, forçar refresh dos dados
+        if (onRefreshProjects) {
+          setTimeout(() => onRefreshProjects(), 1000)
+        }
       }
     }
   }
