@@ -70,7 +70,7 @@ export function ProjectDetails({
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+    <div className="h-full p-6 space-y-6 overflow-y-auto">
       <ProjectHeader
         project={project}
         activeTab={activeTab}
