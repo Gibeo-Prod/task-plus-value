@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { UserManagement } from '@/components/UserManagement'
 import { useAuth } from '@/contexts/AuthContext'
@@ -6,9 +6,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Shield, Users, Database, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
 
 const AdminPanel: React.FC = () => {
   const { isAdmin, loading } = useAuth()
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalAdmins: 0,
+    systemStatus: 'Ativo'
+  })
+  const [loadingStats, setLoadingStats] = useState(true)
+
+  const fetchStats = async () => {
+    try {
+      setLoadingStats(true)
+      
+      // Buscar total de usuários
+      const { count: totalUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+
+      // Buscar total de administradores
+      const { count: totalAdmins } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'admin')
+
+      setStats({
+        totalUsers: totalUsers || 0,
+        totalAdmins: totalAdmins || 0,
+        systemStatus: 'Ativo'
+      })
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats()
+    }
+  }, [isAdmin])
 
   if (loading) {
     return (
@@ -51,7 +91,13 @@ const AdminPanel: React.FC = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">
+                {loadingStats ? (
+                  <div className="animate-pulse bg-muted h-8 w-8 rounded"></div>
+                ) : (
+                  stats.totalUsers
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">usuários registrados</p>
             </CardContent>
           </Card>
@@ -62,7 +108,13 @@ const AdminPanel: React.FC = () => {
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">
+                {loadingStats ? (
+                  <div className="animate-pulse bg-muted h-8 w-8 rounded"></div>
+                ) : (
+                  stats.totalAdmins
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">usuários com privilégios admin</p>
             </CardContent>
           </Card>
