@@ -53,17 +53,22 @@ export const UserManagement: React.FC = () => {
 
     setIsInviting(true)
     try {
-      // Create user in Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        user_metadata: {
-          full_name: fullName
-        },
-        email_confirm: true
+      // Call the secure admin-create-user edge function
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email,
+          password,
+          fullName
+        }
       })
 
-      if (error) throw error
+      if (error) {
+        throw new Error(error.message || 'Erro ao criar usuário')
+      }
+
+      if (data?.error) {
+        throw new Error(data.error)
+      }
 
       toast({
         title: "Usuário criado",
