@@ -103,168 +103,181 @@ export function ProjectList({ client, projects, onAddProject, onUpdateProject, o
   }
 
   return (
-    <div className="flex-1 p-6">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('kanban')}
-            >
-              <LayoutGrid className="h-4 w-4" />
+    <div className="flex-1 flex flex-col">
+      {/* Header fixo */}
+      <div className="flex-shrink-0 p-6 pb-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="flex bg-muted rounded-lg p-1">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Projeto
             </Button>
           </div>
           
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
-          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-ms-blue">Projetos de {client.name}</h1>
+            <p className="text-gray-600 mt-1">
+              {projects.length} projeto{projects.length !== 1 ? 's' : ''} cadastrado{projects.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         </div>
-        
-        <div>
-          <h1 className="text-3xl font-bold text-ms-blue">Projetos de {client.name}</h1>
-          <p className="text-gray-600 mt-1">
-            {projects.length} projeto{projects.length !== 1 ? 's' : ''} cadastrado{projects.length !== 1 ? 's' : ''}
-          </p>
+
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold">Projetos</h2>
+          <p className="text-gray-600">{projects.length} projetos</p>
         </div>
       </div>
 
-      {viewMode === 'kanban' ? (
-        <div className="mt-6">
-          <KanbanBoard
-            projects={projects}
-            clients={[client]}
-            onProjectClick={onProjectClick}
-            onEditProject={handleEditProject}
-            onDeleteProject={handleDeleteProject}
-            onAddProject={(clientId, projectData) => onAddProject(projectData)}
-          />
-        </div>
-      ) : (
-        <div className="grid gap-4 mt-6">
-          {projects.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Nenhum projeto encontrado</h3>
-                  <p className="text-gray-600 mb-4">Comece criando seu primeiro projeto para este cliente.</p>
-                  <Button onClick={() => setShowForm(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Criar Primeiro Projeto
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            projects.map((project) => (
-              <Card 
-                key={project.id} 
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 cursor-pointer" onClick={() => onProjectClick(project)}>
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      {project.description && (
-                        <p className="text-sm text-gray-600 mt-1">{project.description}</p>
-                      )}
+      {/* Área de conteúdo com scroll */}
+      <div className="flex-1 overflow-hidden px-6">
+        {viewMode === 'kanban' ? (
+          <div className="h-full">
+            <KanbanBoard
+              projects={projects}
+              clients={[client]}
+              onProjectClick={onProjectClick}
+              onEditProject={handleEditProject}
+              onDeleteProject={handleDeleteProject}
+              onAddProject={(clientId, projectData) => onAddProject(projectData)}
+            />
+          </div>
+        ) : (
+          <div className="h-full overflow-y-auto pb-6">
+            <div className="grid gap-4">
+              {projects.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold mb-2">Nenhum projeto encontrado</h3>
+                      <p className="text-gray-600 mb-4">Comece criando seu primeiro projeto para este cliente.</p>
+                      <Button onClick={() => setShowForm(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Criar Primeiro Projeto
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status}
-                        </Badge>
-                        <Badge className={getPriorityColor(project.priority)}>
-                          {getPriorityText(project.priority)}
-                        </Badge>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditProject(project)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
+                  </CardContent>
+                </Card>
+              ) : (
+                projects.map((project) => (
+                  <Card 
+                    key={project.id} 
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 cursor-pointer" onClick={() => onProjectClick(project)}>
+                          <CardTitle className="text-lg">{project.name}</CardTitle>
+                          {project.description && (
+                            <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className={getStatusColor(project.status)}>
+                              {project.status}
+                            </Badge>
+                            <Badge className={getPriorityColor(project.priority)}>
+                              {getPriorityText(project.priority)}
+                            </Badge>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditProject(project)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
                               </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o projeto "{project.name}"? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteProject(project.id)}>
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="cursor-pointer" onClick={() => onProjectClick(project)}>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Valor</p>
-                      <p className="font-semibold text-green-600">
-                        R$ {project.value.toLocaleString('pt-BR')}
-                      </p>
-                    </div>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o projeto "{project.name}"? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteProject(project.id)}>
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </CardHeader>
                     
-                    <div>
-                      <p className="text-sm text-gray-600">Início</p>
-                      <p className="font-medium">
-                        {project.startDate ? 
-                          format(parseISO(project.startDate), 'dd/MMM/yyyy', { locale: ptBR }) 
-                          : '-'
-                        }
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm text-gray-600">Entrega</p>
-                      <p className="font-medium">
-                        {project.dueDate ? 
-                          format(parseISO(project.dueDate), 'dd/MMM/yyyy', { locale: ptBR }) 
-                          : '-'
-                        }
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm text-gray-600">Tarefas</p>
-                      <p className="font-medium">{project.tasks || 0}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      )}
+                    <CardContent className="cursor-pointer" onClick={() => onProjectClick(project)}>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Valor</p>
+                          <p className="font-semibold text-green-600">
+                            R$ {project.value.toLocaleString('pt-BR')}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-600">Início</p>
+                          <p className="font-medium">
+                            {project.startDate ? 
+                              format(parseISO(project.startDate), 'dd/MMM/yyyy', { locale: ptBR }) 
+                              : '-'
+                            }
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-600">Entrega</p>
+                          <p className="font-medium">
+                            {project.dueDate ? 
+                              format(parseISO(project.dueDate), 'dd/MMM/yyyy', { locale: ptBR }) 
+                              : '-'
+                            }
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-600">Tarefas</p>
+                          <p className="font-medium">{project.tasks || 0}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
