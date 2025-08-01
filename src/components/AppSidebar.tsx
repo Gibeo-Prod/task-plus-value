@@ -1,5 +1,5 @@
 
-import { CalendarDays, CheckSquare, Star, FileText, Plus, Building2, Users, Settings, Package } from "lucide-react"
+import { CalendarDays, CheckSquare, Star, FileText, Plus, Building2, Users, Settings, Package, Shield } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button"
 import { ClientFormDialog } from "./ClientFormDialog"
 import { ClientItem } from "./ClientItem"
 import { Client } from "@/types/tasks"
+import { useAuth } from "@/contexts/AuthContext"
+import { useNavigate } from "react-router-dom"
 
 // Navigation items
 const items = [
@@ -76,6 +78,9 @@ export function AppSidebar({
   onArchiveClient,
   onDeleteClient 
 }: AppSidebarProps) {
+  const { isAdmin } = useAuth()
+  const navigate = useNavigate()
+  
   return (
     <Sidebar className="border-r border-border bg-background">
       <SidebarHeader className="p-4">
@@ -138,6 +143,25 @@ export function AppSidebar({
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate('/admin')}
+                    className="w-full justify-start"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span>Painel Admin</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4">

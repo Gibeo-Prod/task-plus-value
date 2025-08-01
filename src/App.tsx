@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import ProjectInvite from "./pages/ProjectInvite";
 import ProjectView from "./pages/ProjectView";
 import ProductionProjects from "./pages/ProductionProjects";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,11 @@ const App = () => (
             <Route path="/projetos-producao" element={
               <ProtectedRoute>
                 <ProductionProjects />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             } />
             <Route path="/" element={

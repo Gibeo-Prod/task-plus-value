@@ -3,12 +3,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 
+export type UserRole = 'admin' | 'user'
+
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  userRoles: UserRole[]
+  isAdmin: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
 }
 
@@ -26,6 +30,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [userRoles, setUserRoles] = useState<UserRole[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  const fetchUserRoles = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      const roles = data.map(r => r.role as UserRole)
+      setUserRoles(roles)
+      setIsAdmin(roles.includes('admin'))
+    } catch (error) {
+      console.error('Error fetching user roles:', error)
+      setUserRoles([])
+      setIsAdmin(false)
+    }
+  }
 
   useEffect(() => {
     // Set up auth state listener
@@ -33,6 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          fetchUserRoles(session.user.id)
+        } else {
+          setUserRoles([])
+          setIsAdmin(false)
+        }
+        
         setLoading(false)
       }
     )
@@ -41,6 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        fetchUserRoles(session.user.id)
+      }
+      
       setLoading(false)
     })
 
@@ -55,14 +93,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, fullName?: string) => {
     const redirectUrl = `${window.location.origin}/`
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
+        emailRedirectTo: redirectUrl,
+        data: {
+          full_name: fullName
+        }
       }
     })
     return { error }
@@ -77,6 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       session,
       loading,
+      userRoles,
+      isAdmin,
       signIn,
       signUp,
       signOut
