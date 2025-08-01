@@ -207,82 +207,186 @@ export const UserManagement: React.FC = () => {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
-        {allUsers.map((user) => (
-          <Card key={user.id}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{user.full_name || user.email}</h3>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <div className="flex gap-2 mt-2">
-                      {user.roles.map((role) => (
-                        <Badge 
-                          key={role} 
-                          variant={role === 'admin' ? 'default' : 'secondary'}
-                        >
-                          {role === 'admin' ? (
-                            <>
-                              <Shield className="w-3 h-3 mr-1" />
-                              Administrador
-                            </>
-                          ) : (
-                            'Usuário'
-                          )}
-                        </Badge>
-                      ))}
-                      {user.roles.length === 0 && (
-                        <Badge variant="outline">Sem permissões</Badge>
-                      )}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-border">
+          <thead>
+            <tr className="bg-muted/50">
+              <th className="border border-border p-3 text-left">Usuário</th>
+              <th className="border border-border p-3 text-left">Email</th>
+              <th className="border border-border p-3 text-left">Papel</th>
+              <th className="border border-border p-3 text-left">Status</th>
+              <th className="border border-border p-3 text-left">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allUsers.map((user) => (
+              <tr key={user.id} className="hover:bg-muted/30">
+                <td className="border border-border p-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{user.full_name || 'Sem nome'}</div>
+                      <div className="text-sm text-muted-foreground">ID: {user.id.slice(0, 8)}...</div>
                     </div>
                   </div>
-                </div>
+                </td>
+                <td className="border border-border p-3">
+                  <div className="font-mono text-sm">{user.email}</div>
+                </td>
+                <td className="border border-border p-3">
+                  <div className="flex gap-1 flex-wrap">
+                    {user.roles.map((role) => (
+                      <Badge 
+                        key={role} 
+                        variant={role === 'admin' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {role === 'admin' ? (
+                          <>
+                            <Shield className="w-3 h-3 mr-1" />
+                            Admin
+                          </>
+                        ) : (
+                          'Usuário'
+                        )}
+                      </Badge>
+                    ))}
+                    {user.roles.length === 0 && (
+                      <Badge variant="outline" className="text-xs">Sem papel</Badge>
+                    )}
+                  </div>
+                </td>
+                <td className="border border-border p-3">
+                  <Badge variant="secondary" className="text-xs">
+                    Ativo
+                  </Badge>
+                </td>
+                <td className="border border-border p-3">
+                  <div className="flex gap-2 flex-wrap">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Editar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Editar Usuário</DialogTitle>
+                          <DialogDescription>
+                            Atualize as informações do usuário
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="editEmail">Email</Label>
+                            <Input
+                              id="editEmail"
+                              type="email"
+                              defaultValue={user.email}
+                              className="font-mono text-sm"
+                              disabled
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Email não pode ser alterado por segurança
+                            </p>
+                          </div>
+                          <div>
+                            <Label htmlFor="editFullName">Nome Completo</Label>
+                            <Input
+                              id="editFullName"
+                              defaultValue={user.full_name || ''}
+                              placeholder="Nome do usuário"
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline">Cancelar</Button>
+                            <Button>Salvar Alterações</Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
 
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRoleToggle(user.id, 'admin')}
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    {user.roles.includes('admin') ? 'Remover Admin' : 'Tornar Admin'}
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Remover
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar Remoção</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja remover o usuário {user.email}? 
-                          Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Remover
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRoleToggle(user.id, 'admin')}
+                    >
+                      {user.roles.includes('admin') ? 'Remover Admin' : 'Tornar Admin'}
+                    </Button>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          🔑 Reset Senha
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Resetar Senha</DialogTitle>
+                          <DialogDescription>
+                            Defina uma nova senha para {user.email}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="newPassword">Nova Senha</Label>
+                            <Input
+                              id="newPassword"
+                              type="password"
+                              placeholder="Digite a nova senha"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                            <Input
+                              id="confirmPassword"
+                              type="password"
+                              placeholder="Confirme a nova senha"
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline">Cancelar</Button>
+                            <Button>Atualizar Senha</Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o usuário {user.email}? 
+                            Esta ação não pode ser desfeita e removerá todos os dados associados.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Excluir Usuário
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         {allUsers.length === 0 && (
           <Card>
