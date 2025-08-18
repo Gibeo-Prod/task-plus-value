@@ -822,6 +822,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      validate_invite_token_access: {
+        Args: { invite_token: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
