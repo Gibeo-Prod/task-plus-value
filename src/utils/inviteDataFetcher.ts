@@ -9,11 +9,13 @@ export const fetchInviteByToken = async (token: string) => {
   const searchPatterns = getTokenSearchPatterns(token)
   console.log('Token search patterns:', searchPatterns)
 
-  // Try exact match first
+  // Try exact match first - RLS now requires token-specific queries
   const { data: inviteArray, error: arrayError } = await supabase
     .from('project_invites')
     .select('*')
     .eq('token', searchPatterns.exact)
+    .not('expires_at', 'lt', new Date().toISOString()) // Only non-expired
+    .is('used_at', null) // Only unused invites
 
   console.log('Exact match result:', inviteArray)
   console.log('Exact match error:', arrayError)
@@ -30,6 +32,8 @@ export const fetchInviteByToken = async (token: string) => {
       .from('project_invites')
       .select('*')
       .ilike('token', token)
+      .not('expires_at', 'lt', new Date().toISOString()) // Only non-expired
+      .is('used_at', null) // Only unused invites
 
     console.log('Case-insensitive result:', ilikeArray)
     
