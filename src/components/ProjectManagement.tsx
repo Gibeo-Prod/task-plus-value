@@ -33,11 +33,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Settings, Trash2, Search, Folder, Calendar, DollarSign, Filter } from 'lucide-react'
+import { Settings, Trash2, Search, Folder, Calendar, DollarSign, Filter, LayoutGrid, List } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useUserRoles } from '@/hooks/useUserRoles'
 import { Project } from '@/types/tasks'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
 interface ProjectWithUser extends Project {
   user_name?: string
@@ -50,6 +51,12 @@ interface User {
   email: string
 }
 
+interface KanbanColumn {
+  id: string
+  title: string
+  projects: ProjectWithUser[]
+}
+
 export const ProjectManagement: React.FC = () => {
   const { isAdmin } = useUserRoles()
   const { toast } = useToast()
@@ -60,6 +67,9 @@ export const ProjectManagement: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
+  const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([])
+  const [projectStatuses, setProjectStatuses] = useState<string[]>([])
 
   const fetchUsers = async () => {
     try {
@@ -162,6 +172,7 @@ export const ProjectManagement: React.FC = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchUsers()
+      fetchProjectStatuses()
     }
   }, [isAdmin])
 
@@ -170,6 +181,74 @@ export const ProjectManagement: React.FC = () => {
       fetchProjects()
     }
   }, [selectedUserId, searchTerm, isAdmin])
+
+  useEffect(() => {
+    if (projects.length > 0 && projectStatuses.length > 0) {
+      organizeProjectsIntoColumns()
+    }
+  }, [projects, projectStatuses])
+
+  const fetchProjectStatuses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('project_statuses')
+        .select('name')
+        .order('sort_order')
+
+      if (error) throw error
+
+      const uniqueStatuses = Array.from(new Set(data.map(status => status.name)))
+      setProjectStatuses(uniqueStatuses)
+    } catch (error: any) {
+      console.error('Erro ao carregar status:', error)
+    }
+  }
+
+  const organizeProjectsIntoColumns = () => {
+    const columns: KanbanColumn[] = projectStatuses.map(status => ({
+      id: status,
+      title: status,
+      projects: projects.filter(project => project.status === status)
+    }))
+    setKanbanColumns(columns)
+  }
+
+  const handleDragEnd = async (result: any) => {
+    if (!result.destination) return
+
+    const { source, destination, draggableId } = result
+    
+    if (source.droppableId === destination.droppableId) return
+
+    const project = projects.find(p => p.id === draggableId)
+    if (!project) return
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: destination.droppableId })
+        .eq('id', draggableId)
+
+      if (error) throw error
+
+      // Update local state
+      const updatedProjects = projects.map(p => 
+        p.id === draggableId ? { ...p, status: destination.droppableId } : p
+      )
+      setProjects(updatedProjects)
+
+      toast({
+        title: "Status atualizado",
+        description: `Projeto movido para ${destination.droppableId}`,
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar status",
+        description: error.message,
+        variant: "destructive"
+      })
+    }
+  }
 
   const handleEditProject = async () => {
     if (!editingProject) return
@@ -271,6 +350,24 @@ export const ProjectManagement: React.FC = () => {
           <h2 className="text-2xl font-bold">Gerenciamento de Projetos</h2>
           <p className="text-muted-foreground">Gerencie todos os projetos do sistema</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+          >
+            <List className="w-4 h-4 mr-2" />
+            Tabela
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+          >
+            <LayoutGrid className="w-4 h-4 mr-2" />
+            Kanban
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -336,7 +433,7 @@ export const ProjectManagement: React.FC = () => {
             <div className="text-center py-8">
               <p className="text-muted-foreground">Nenhum projeto encontrado</p>
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -457,15 +554,25 @@ export const ProjectManagement: React.FC = () => {
                                   <div className="grid grid-cols-3 gap-4">
                                     <div>
                                       <Label htmlFor="editStatus">Status</Label>
-                                      <Input
-                                        id="editStatus"
-                                        value={editingProject.status}
-                                        onChange={(e) => 
+                                      <Select 
+                                        value={editingProject.status} 
+                                        onValueChange={(value) => 
                                           setEditingProject(prev => 
-                                            prev ? { ...prev, status: e.target.value } : null
+                                            prev ? { ...prev, status: value } : null
                                           )
                                         }
-                                      />
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {projectStatuses.map((status) => (
+                                            <SelectItem key={status} value={status}>
+                                              {status}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </div>
                                     <div>
                                       <Label htmlFor="editPriority">Prioridade</Label>
@@ -569,6 +676,259 @@ export const ProjectManagement: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+          ) : (
+            // Kanban View
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-x-auto">
+                {kanbanColumns.map((column) => (
+                  <div key={column.id} className="min-w-72">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-lg">{column.title}</h3>
+                      <Badge variant="secondary">{column.projects.length}</Badge>
+                    </div>
+                    
+                    <Droppable droppableId={column.id}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`space-y-3 min-h-96 p-2 rounded-lg border-2 border-dashed transition-colors ${
+                            snapshot.isDraggingOver ? 'border-primary bg-primary/5' : 'border-muted'
+                          }`}
+                        >
+                          {column.projects.map((project, index) => (
+                            <Draggable key={project.id} draggableId={project.id} index={index}>
+                              {(provided, snapshot) => (
+                                <Card
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`cursor-move transition-all ${
+                                    snapshot.isDragging ? 'shadow-lg ring-2 ring-primary' : ''
+                                  }`}
+                                >
+                                  <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between">
+                                      <CardTitle className="text-sm line-clamp-2">
+                                        {project.name}
+                                      </CardTitle>
+                                      <Badge variant={getPriorityColor(project.priority)} className="text-xs">
+                                        {getPriorityText(project.priority)}
+                                      </Badge>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent className="pt-0">
+                                    <div className="space-y-2">
+                                      <div className="text-xs text-muted-foreground">
+                                        <div>Cliente: {project.client_name}</div>
+                                        <div>Usuário: {project.user_name}</div>
+                                      </div>
+                                      
+                                      <div className="flex items-center justify-between">
+                                        <div className="text-sm font-medium text-green-600">
+                                          {formatCurrency(Number(project.value))}
+                                        </div>
+                                        {project.dueDate && (
+                                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                            <Calendar className="w-3 h-3" />
+                                            {new Date(project.dueDate).toLocaleDateString('pt-BR')}
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      <div className="flex gap-1 mt-2">
+                                        <Dialog>
+                                          <DialogTrigger asChild>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              className="flex-1"
+                                              onClick={() => setEditingProject(project)}
+                                            >
+                                              <Settings className="w-3 h-3 mr-1" />
+                                              Editar
+                                            </Button>
+                                          </DialogTrigger>
+                                          <DialogContent className="max-w-2xl">
+                                            <DialogHeader>
+                                              <DialogTitle>Editar Projeto</DialogTitle>
+                                              <DialogDescription>
+                                                Atualize as informações do projeto
+                                              </DialogDescription>
+                                            </DialogHeader>
+                                            {editingProject && (
+                                              <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  <div>
+                                                    <Label htmlFor="editName">Nome do Projeto</Label>
+                                                    <Input
+                                                      id="editName"
+                                                      value={editingProject.name}
+                                                      onChange={(e) => 
+                                                        setEditingProject(prev => 
+                                                          prev ? { ...prev, name: e.target.value } : null
+                                                        )
+                                                      }
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label htmlFor="editValue">Valor</Label>
+                                                    <Input
+                                                      id="editValue"
+                                                      type="number"
+                                                      value={editingProject.value}
+                                                      onChange={(e) => 
+                                                        setEditingProject(prev => 
+                                                          prev ? { ...prev, value: Number(e.target.value) } : null
+                                                        )
+                                                      }
+                                                    />
+                                                  </div>
+                                                </div>
+                                                <div>
+                                                  <Label htmlFor="editDescription">Descrição</Label>
+                                                  <Textarea
+                                                    id="editDescription"
+                                                    value={editingProject.description || ''}
+                                                    onChange={(e) => 
+                                                      setEditingProject(prev => 
+                                                        prev ? { ...prev, description: e.target.value } : null
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-4">
+                                                  <div>
+                                                    <Label htmlFor="editStatus">Status</Label>
+                                                    <Select 
+                                                      value={editingProject.status} 
+                                                      onValueChange={(value) => 
+                                                        setEditingProject(prev => 
+                                                          prev ? { ...prev, status: value } : null
+                                                        )
+                                                      }
+                                                    >
+                                                      <SelectTrigger>
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        {projectStatuses.map((status) => (
+                                                          <SelectItem key={status} value={status}>
+                                                            {status}
+                                                          </SelectItem>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                  <div>
+                                                    <Label htmlFor="editPriority">Prioridade</Label>
+                                                    <Select 
+                                                      value={editingProject.priority} 
+                                                      onValueChange={(value) => 
+                                                        setEditingProject(prev => 
+                                                          prev ? { ...prev, priority: value as 'low' | 'medium' | 'high' } : null
+                                                        )
+                                                      }
+                                                    >
+                                                      <SelectTrigger>
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        <SelectItem value="low">Baixa</SelectItem>
+                                                        <SelectItem value="medium">Média</SelectItem>
+                                                        <SelectItem value="high">Alta</SelectItem>
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                  <div>
+                                                    <Label htmlFor="editDueDate">Data de Entrega</Label>
+                                                    <Input
+                                                      id="editDueDate"
+                                                      type="date"
+                                                      value={editingProject.dueDate || ''}
+                                                      onChange={(e) => 
+                                                        setEditingProject(prev => 
+                                                          prev ? { ...prev, dueDate: e.target.value } : null
+                                                        )
+                                                      }
+                                                    />
+                                                  </div>
+                                                </div>
+                                                <div>
+                                                  <Label htmlFor="editNotes">Notas</Label>
+                                                  <Textarea
+                                                    id="editNotes"
+                                                    value={editingProject.notes || ''}
+                                                    onChange={(e) => 
+                                                      setEditingProject(prev => 
+                                                        prev ? { ...prev, notes: e.target.value } : null
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="flex justify-end space-x-2">
+                                                  <Button 
+                                                    variant="outline" 
+                                                    onClick={() => setEditingProject(null)}
+                                                  >
+                                                    Cancelar
+                                                  </Button>
+                                                  <Button 
+                                                    onClick={handleEditProject}
+                                                    disabled={isEditing}
+                                                  >
+                                                    {isEditing ? 'Salvando...' : 'Salvar Alterações'}
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </DialogContent>
+                                        </Dialog>
+                                        
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm" 
+                                              className="text-destructive hover:text-destructive"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                Tem certeza que deseja excluir o projeto "{project.name}"? 
+                                                Esta ação não pode ser desfeita.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                              <AlertDialogAction 
+                                                onClick={() => handleDeleteProject(project.id)}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                              >
+                                                Excluir Projeto
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                ))}
+              </div>
+            </DragDropContext>
           )}
         </CardContent>
       </Card>
