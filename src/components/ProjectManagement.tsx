@@ -61,10 +61,6 @@ export const ProjectManagement: React.FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  if (!isAdmin) {
-    return null
-  }
-
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
@@ -164,12 +160,16 @@ export const ProjectManagement: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    if (isAdmin) {
+      fetchUsers()
+    }
+  }, [isAdmin])
 
   useEffect(() => {
-    fetchProjects()
-  }, [selectedUserId, searchTerm])
+    if (isAdmin) {
+      fetchProjects()
+    }
+  }, [selectedUserId, searchTerm, isAdmin])
 
   const handleEditProject = async () => {
     if (!editingProject) return
@@ -257,6 +257,11 @@ export const ProjectManagement: React.FC = () => {
       style: 'currency',
       currency: 'BRL'
     }).format(value)
+  }
+
+  // Conditional rendering moved to JSX level
+  if (!isAdmin) {
+    return null
   }
 
   return (
