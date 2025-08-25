@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { UserManagement } from '@/components/UserManagement'
+import { ProjectManagement } from '@/components/ProjectManagement'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, Users, Database, ArrowLeft } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Shield, Users, Database, ArrowLeft, Folder } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -13,6 +15,7 @@ const AdminPanel: React.FC = () => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalAdmins: 0,
+    totalProjects: 0,
     systemStatus: 'Ativo'
   })
   const [loadingStats, setLoadingStats] = useState(true)
@@ -32,9 +35,15 @@ const AdminPanel: React.FC = () => {
         .select('*', { count: 'exact', head: true })
         .eq('role', 'admin')
 
+      // Buscar total de projetos
+      const { count: totalProjects } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true })
+
       setStats({
         totalUsers: totalUsers || 0,
         totalAdmins: totalAdmins || 0,
+        totalProjects: totalProjects || 0,
         systemStatus: 'Ativo'
       })
     } catch (error) {
@@ -84,7 +93,7 @@ const AdminPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
@@ -121,6 +130,23 @@ const AdminPanel: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Projetos</CardTitle>
+              <Folder className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {loadingStats ? (
+                  <div className="animate-pulse bg-muted h-8 w-8 rounded"></div>
+                ) : (
+                  stats.totalProjects
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">projetos no sistema</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sistema</CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -131,7 +157,26 @@ const AdminPanel: React.FC = () => {
           </Card>
         </div>
 
-        <UserManagement />
+        <Tabs defaultValue="users" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Usuários
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center gap-2">
+              <Folder className="w-4 h-4" />
+              Projetos
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+          
+          <TabsContent value="projects">
+            <ProjectManagement />
+          </TabsContent>
+        </Tabs>
         </div>
       </div>
     </div>
