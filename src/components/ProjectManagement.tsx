@@ -679,8 +679,9 @@ export const ProjectManagement: React.FC = () => {
           ) : (
             // Kanban View
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-x-auto">
-                {kanbanColumns.map((column) => (
+              <div className="overflow-x-auto pb-4">
+                <div className="flex gap-6 min-w-max">
+                  {kanbanColumns.map((column) => (
                   <div key={column.id} className="min-w-72">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold text-lg">{column.title}</h3>
@@ -926,7 +927,8 @@ export const ProjectManagement: React.FC = () => {
                       )}
                     </Droppable>
                   </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </DragDropContext>
           )}
