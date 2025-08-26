@@ -75,8 +75,8 @@ const AdminPanel: React.FC = () => {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
-      <div className="container mx-auto px-6 py-8 flex-1 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-8">
         <Link to="/">
           <Button variant="outline" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -157,7 +157,7 @@ const AdminPanel: React.FC = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="users" className="flex-1 flex flex-col overflow-hidden">
+        <Tabs defaultValue="users" className="space-y-4">
           <TabsList>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -169,11 +169,11 @@ const AdminPanel: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="users" className="flex-1 overflow-hidden">
+          <TabsContent value="users">
             <UserManagement />
           </TabsContent>
           
-          <TabsContent value="projects" className="flex-1 overflow-hidden">
+          <TabsContent value="projects">
             <ProjectManagement />
           </TabsContent>
         </Tabs>
