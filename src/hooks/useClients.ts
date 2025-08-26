@@ -88,6 +88,49 @@ export const useClients = (projects: Project[]) => {
     }
   })
 
+  const updateClientMutation = useMutation({
+    mutationFn: async ({ clientId, clientData }: {
+      clientId: string
+      clientData: {
+        name?: string
+        email?: string
+        phone?: string
+        company?: string
+        contactPersonName?: string
+        contactPersonEmail?: string
+        contactPersonPhone?: string
+      }
+    }) => {
+      if (!user) throw new Error('User not authenticated')
+      
+      const { data, error } = await supabase
+        .from('clients')
+        .update({
+          name: clientData.name,
+          email: clientData.email,
+          phone: clientData.phone,
+          company: clientData.company,
+          contact_person_name: clientData.contactPersonName,
+          contact_person_email: clientData.contactPersonEmail,
+          contact_person_phone: clientData.contactPersonPhone
+        })
+        .eq('id', clientId)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast({
+        title: "Cliente atualizado",
+        description: "Informações do cliente atualizadas com sucesso!",
+      })
+    }
+  })
+
   const deleteClientMutation = useMutation({
     mutationFn: async (clientId: string) => {
       if (!user) throw new Error('User not authenticated')
@@ -113,6 +156,7 @@ export const useClients = (projects: Project[]) => {
     clients,
     clientsLoading,
     addClient: addClientMutation.mutate,
+    updateClient: updateClientMutation.mutate,
     archiveClient: archiveClientMutation.mutate,
     deleteClient: deleteClientMutation.mutate
   }
