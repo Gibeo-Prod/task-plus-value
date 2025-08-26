@@ -58,7 +58,7 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleTaskClick}
     >
-      <div className="flex items-start gap-3 p-3">
+      <div className="flex items-start gap-3 p-3 max-h-60 overflow-y-auto">
         <Checkbox
           checked={task.completed}
           onCheckedChange={() => onToggle(task.id)}
