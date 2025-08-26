@@ -344,7 +344,7 @@ export const ProjectManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-2xl font-bold">Gerenciamento de Projetos</h2>
@@ -414,7 +414,7 @@ export const ProjectManagement: React.FC = () => {
       </Card>
 
       {/* Lista de Projetos */}
-      <Card>
+      <Card className="flex-1 flex flex-col overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -423,7 +423,7 @@ export const ProjectManagement: React.FC = () => {
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-hidden">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -679,8 +679,8 @@ export const ProjectManagement: React.FC = () => {
           ) : (
             // Kanban View
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-6 min-w-max">
+              <div className="overflow-x-auto overflow-y-hidden h-full pb-4">
+                <div className="flex gap-6 min-w-max h-full">
                   {kanbanColumns.map((column) => (
                   <div key={column.id} className="min-w-72">
                     <div className="flex items-center justify-between mb-4">
@@ -690,10 +690,10 @@ export const ProjectManagement: React.FC = () => {
                     
                     <Droppable droppableId={column.id}>
                       {(provided, snapshot) => (
-                        <div
+                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-3 min-h-96 p-2 rounded-lg border-2 border-dashed transition-colors ${
+                          className={`space-y-3 h-full p-2 rounded-lg border-2 border-dashed transition-colors overflow-y-auto ${
                             snapshot.isDraggingOver ? 'border-primary bg-primary/5' : 'border-muted'
                           }`}
                         >
