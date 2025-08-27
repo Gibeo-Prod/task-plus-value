@@ -171,11 +171,12 @@ export const useCollaborativeChat = (projectId: string) => {
     if (!chat?.id) return
 
     try {
+      // Load both active and pending participants
       const { data, error } = await supabase
         .from('chat_participants')
         .select('*')
         .eq('chat_id', chat.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'pending'])
         .order('joined_at', { ascending: true })
 
       if (error) throw error
