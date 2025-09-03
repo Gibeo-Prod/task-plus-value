@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X, Star, Crown } from 'lucide-react'
+import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X, Star, Crown, Tags } from 'lucide-react'
 import { useChecklistTemplates, ChecklistTemplateItem } from '@/hooks/useChecklistTemplates'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -50,7 +50,10 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
   const [newItem, setNewItem] = useState({ title: '', description: '', category: 'ESTRUTURA' })
   const [newTemplate, setNewTemplate] = useState({ name: '', description: '', is_default: false })
 
-  const categories = ['ESTRUTURA', 'PROJETO', 'ACABAMENTOS', 'REVISÃO', 'PRODUÇÃO']
+  const [categories, setCategories] = useState(['ESTRUTURA', 'PROJETO', 'ACABAMENTOS', 'REVISÃO', 'PRODUÇÃO'])
+  const [showEditCategoriesDialog, setShowEditCategoriesDialog] = useState(false)
+  const [editingCategories, setEditingCategories] = useState<string[]>([])
+  const [newCategory, setNewCategory] = useState('')
 
   useEffect(() => {
     if (templates.length > 0 && !selectedTemplate) {
@@ -193,6 +196,28 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
     }
   }
 
+  const handleEditCategories = () => {
+    setEditingCategories([...categories])
+    setShowEditCategoriesDialog(true)
+  }
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !editingCategories.includes(newCategory.trim().toUpperCase())) {
+      setEditingCategories([...editingCategories, newCategory.trim().toUpperCase()])
+      setNewCategory('')
+    }
+  }
+
+  const handleRemoveCategory = (categoryToRemove: string) => {
+    setEditingCategories(editingCategories.filter(cat => cat !== categoryToRemove))
+  }
+
+  const handleSaveCategories = () => {
+    setCategories(editingCategories)
+    setShowEditCategoriesDialog(false)
+    toast.success('Categorias atualizadas com sucesso!')
+  }
+
   const groupedItems = templateItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = []
@@ -230,13 +255,68 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
         </div>
         <div className="flex gap-2">
           {isAdmin && (
-            <Dialog open={showCreateTemplateDialog} onOpenChange={setShowCreateTemplateDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Template
-                </Button>
-              </DialogTrigger>
+            <>
+              <Dialog open={showEditCategoriesDialog} onOpenChange={setShowEditCategoriesDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Tags className="w-4 h-4 mr-2" />
+                    Editar Categorias
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Editar Categorias</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Categorias Existentes</label>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {editingCategories.map((category, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                            <span className="text-sm">{category}</span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleRemoveCategory(category)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Adicionar Nova Categoria</label>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={newCategory}
+                          onChange={(e) => setNewCategory(e.target.value)}
+                          placeholder="Nome da categoria"
+                          onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                        />
+                        <Button onClick={handleAddCategory} disabled={!newCategory.trim()}>
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={() => setShowEditCategoriesDialog(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveCategories}>
+                        Salvar Categorias
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={showCreateTemplateDialog} onOpenChange={setShowCreateTemplateDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo Template
+                  </Button>
+                </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Criar Novo Template</DialogTitle>
@@ -283,6 +363,7 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
                 </div>
               </DialogContent>
             </Dialog>
+            </>
           )}
           {onClose && (
             <Button variant="outline" onClick={onClose}>
