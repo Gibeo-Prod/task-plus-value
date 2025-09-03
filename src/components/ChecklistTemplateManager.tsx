@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X } from 'lucide-react'
+import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X, Star, Crown } from 'lucide-react'
 import { useChecklistTemplates, ChecklistTemplateItem } from '@/hooks/useChecklistTemplates'
+import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 interface ChecklistTemplateManagerProps {
@@ -24,14 +25,18 @@ interface EditingItem {
 }
 
 export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerProps) {
+  const { isAdmin } = useAuth()
   const { 
     templates, 
     loading, 
     fetchTemplateItems, 
+    createNewTemplate,
     updateTemplate, 
     updateTemplateItem,
     addTemplateItem,
     deleteTemplateItem,
+    setDefaultTemplate,
+    deleteTemplate,
     getDefaultTemplate 
   } = useChecklistTemplates()
   
@@ -41,7 +46,9 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
   const [editingTemplate, setEditingTemplate] = useState<{ id: string; name: string; description?: string } | null>(null)
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
   const [showAddItemDialog, setShowAddItemDialog] = useState(false)
+  const [showCreateTemplateDialog, setShowCreateTemplateDialog] = useState(false)
   const [newItem, setNewItem] = useState({ title: '', description: '', category: 'ESTRUTURA' })
+  const [newTemplate, setNewTemplate] = useState({ name: '', description: '', is_default: false })
 
   const categories = ['ESTRUTURA', 'PROJETO', 'ACABAMENTOS', 'REVISÃO', 'PRODUÇÃO']
 
@@ -143,6 +150,49 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
     }
   }
 
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name.trim()) return
+
+    try {
+      await createNewTemplate({
+        name: newTemplate.name,
+        description: newTemplate.description,
+        is_default: newTemplate.is_default
+      })
+      setNewTemplate({ name: '', description: '', is_default: false })
+      setShowCreateTemplateDialog(false)
+      toast.success('Template criado com sucesso!')
+    } catch (error) {
+      console.error('Error creating template:', error)
+      toast.error('Erro ao criar template')
+    }
+  }
+
+  const handleSetDefault = async (templateId: string) => {
+    if (!isAdmin) return
+
+    try {
+      await setDefaultTemplate(templateId)
+      toast.success('Template padrão definido!')
+    } catch (error) {
+      console.error('Error setting default template:', error)
+      toast.error('Erro ao definir template padrão')
+    }
+  }
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este template? Todos os itens serão perdidos.')) return
+
+    try {
+      await deleteTemplate(templateId)
+      setSelectedTemplate(null)
+      toast.success('Template excluído com sucesso!')
+    } catch (error) {
+      console.error('Error deleting template:', error)
+      toast.error('Erro ao excluir template')
+    }
+  }
+
   const groupedItems = templateItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = []
@@ -175,14 +225,71 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
         <div>
           <h2 className="text-2xl font-bold">Templates de Checklist</h2>
           <p className="text-muted-foreground">
-            Gerencie os templates padrão para seus projetos
+            {isAdmin ? 'Gerencie todos os templates do sistema' : 'Gerencie os templates padrão para seus projetos'}
           </p>
         </div>
-        {onClose && (
-          <Button variant="outline" onClick={onClose}>
-            Fechar
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {isAdmin && (
+            <Dialog open={showCreateTemplateDialog} onOpenChange={setShowCreateTemplateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Template</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Nome</label>
+                    <Input 
+                      value={newTemplate.name}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                      placeholder="Nome do template"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Descrição</label>
+                    <Textarea 
+                      value={newTemplate.description}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
+                      placeholder="Descrição do template"
+                      rows={3}
+                    />
+                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="isDefault"
+                        checked={newTemplate.is_default}
+                        onChange={(e) => setNewTemplate({ ...newTemplate, is_default: e.target.checked })}
+                      />
+                      <label htmlFor="isDefault" className="text-sm font-medium">
+                        Marcar como template padrão
+                      </label>
+                    </div>
+                  )}
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => setShowCreateTemplateDialog(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleCreateTemplate}>
+                      Criar Template
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+          {onClose && (
+            <Button variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -244,23 +351,53 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
                   </div>
                   <div className="flex items-center gap-2">
                     {template.is_default && (
-                      <Badge variant="secondary">Padrão</Badge>
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Star className="w-3 h-3" />
+                        Padrão
+                      </Badge>
                     )}
                     {!editingTemplate && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditingTemplate({
-                            id: template.id,
-                            name: template.name,
-                            description: template.description
-                          })
-                        }}
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </Button>
+                      <div className="flex gap-1">
+                        {isAdmin && !template.is_default && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSetDefault(template.id)
+                            }}
+                            title="Definir como padrão"
+                          >
+                            <Crown className="w-3 h-3" />
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingTemplate({
+                              id: template.id,
+                              name: template.name,
+                              description: template.description
+                            })
+                          }}
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </Button>
+                        {isAdmin && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteTemplate(template.id)
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

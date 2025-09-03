@@ -6,9 +6,10 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Shield, Users, Database, ArrowLeft, Folder } from 'lucide-react'
+import { Shield, Users, Database, ArrowLeft, Folder, List } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import { ChecklistTemplateManager } from '@/components/ChecklistTemplateManager'
 
 const AdminPanel: React.FC = () => {
   const { isAdmin, loading } = useAuth()
@@ -167,6 +168,10 @@ const AdminPanel: React.FC = () => {
               <Folder className="w-4 h-4" />
               Projetos
             </TabsTrigger>
+            <TabsTrigger value="checklists" className="flex items-center gap-2">
+              <List className="w-4 h-4" />
+              Templates de Checklist
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="users">
@@ -175,6 +180,10 @@ const AdminPanel: React.FC = () => {
           
           <TabsContent value="projects">
             <ProjectManagement />
+          </TabsContent>
+          
+          <TabsContent value="checklists">
+            <ChecklistTemplateManager />
           </TabsContent>
         </Tabs>
         </div>

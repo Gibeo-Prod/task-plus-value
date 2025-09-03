@@ -25,16 +25,22 @@ export interface ChecklistTemplateItem {
 export const useChecklistTemplates = () => {
   const [templates, setTemplates] = useState<ChecklistTemplate[]>([])
   const [loading, setLoading] = useState(true)
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
 
   const fetchTemplates = async () => {
     if (!user) return
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('checklist_templates')
         .select('*')
-        .order('created_at', { ascending: false })
+      
+      // Admins can see all templates, regular users only their own
+      if (!isAdmin) {
+        query = query.eq('user_id', user.id)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
       setTemplates(data || [])
@@ -135,7 +141,7 @@ export const useChecklistTemplates = () => {
     if (!user) return
 
     try {
-      const { error } = await supabase
+      let query = supabase
         .from('checklist_templates')
         .update({
           name: templateData.name,
@@ -143,7 +149,13 @@ export const useChecklistTemplates = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', templateId)
-        .eq('user_id', user.id)
+      
+      // Regular users can only edit their own templates
+      if (!isAdmin) {
+        query = query.eq('user_id', user.id)
+      }
+
+      const { error } = await query
 
       if (error) throw error
 
@@ -223,13 +235,95 @@ export const useChecklistTemplates = () => {
     }
   }
 
+  const createNewTemplate = async (templateData: { name: string; description?: string; is_default?: boolean }) => {
+    if (!user) return
+
+    try {
+      const { data: template, error } = await supabase
+        .from('checklist_templates')
+        .insert({
+          name: templateData.name,
+          description: templateData.description,
+          is_default: templateData.is_default || false,
+          user_id: user.id
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await fetchTemplates()
+      return template
+    } catch (error) {
+      console.error('Error creating template:', error)
+      throw error
+    }
+  }
+
+  const setDefaultTemplate = async (templateId: string) => {
+    if (!user || !isAdmin) return
+
+    try {
+      // First, remove default flag from all templates
+      await supabase
+        .from('checklist_templates')
+        .update({ is_default: false })
+        .neq('id', '00000000-0000-0000-0000-000000000000') // Update all
+
+      // Then set the new default
+      const { error } = await supabase
+        .from('checklist_templates')
+        .update({ is_default: true })
+        .eq('id', templateId)
+
+      if (error) throw error
+
+      await fetchTemplates()
+    } catch (error) {
+      console.error('Error setting default template:', error)
+      throw error
+    }
+  }
+
+  const deleteTemplate = async (templateId: string) => {
+    if (!user) return
+
+    try {
+      // First delete all template items
+      await supabase
+        .from('checklist_template_items')
+        .delete()
+        .eq('template_id', templateId)
+
+      // Then delete the template
+      let query = supabase
+        .from('checklist_templates')
+        .delete()
+        .eq('id', templateId)
+      
+      // Regular users can only delete their own templates
+      if (!isAdmin) {
+        query = query.eq('user_id', user.id)
+      }
+
+      const { error } = await query
+
+      if (error) throw error
+
+      await fetchTemplates()
+    } catch (error) {
+      console.error('Error deleting template:', error)
+      throw error
+    }
+  }
+
   const getDefaultTemplate = () => {
     return templates.find(t => t.is_default) || templates[0]
   }
 
   useEffect(() => {
     fetchTemplates()
-  }, [user])
+  }, [user, isAdmin])
 
   return {
     templates,
@@ -237,11 +331,14 @@ export const useChecklistTemplates = () => {
     fetchTemplates,
     fetchTemplateItems,
     createTemplateFromItems,
+    createNewTemplate,
     applyTemplateToProject,
     updateTemplate,
     updateTemplateItem,
     addTemplateItem,
     deleteTemplateItem,
+    setDefaultTemplate,
+    deleteTemplate,
     getDefaultTemplate
   }
 }
