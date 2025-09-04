@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X, Star, Crown } from 'lucide-react'
+import { CheckCircle, List, Settings, Plus, Pencil, Trash2, Save, X, Star, Crown, GripVertical } from 'lucide-react'
 import { useChecklistTemplates, ChecklistTemplateItem } from '@/hooks/useChecklistTemplates'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -53,6 +54,15 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
   const [categories, setCategories] = useState(['ESTRUTURA', 'PROJETO', 'ACABAMENTOS', 'REVISÃO', 'PRODUÇÃO'])
   const [showCustomCategory, setShowCustomCategory] = useState(false)
   const [customCategory, setCustomCategory] = useState('')
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([])
+
+  // Initialize category order based on current grouped items
+  useEffect(() => {
+    if (templateItems.length > 0) {
+      const existingCategories = Object.keys(groupedItems)
+      setCategoryOrder(existingCategories)
+    }
+  }, [templateItems])
 
   useEffect(() => {
     if (templates.length > 0 && !selectedTemplate) {
@@ -204,6 +214,19 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
       console.error('Error deleting template:', error)
       toast.error('Erro ao excluir template')
     }
+  }
+
+  const handleCategoryDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return
+    }
+
+    const items = Array.from(categoryOrder)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setCategoryOrder(items)
+    toast.success('Ordem das categorias atualizada!')
   }
 
 
@@ -511,90 +534,120 @@ export function ChecklistTemplateManager({ onClose }: ChecklistTemplateManagerPr
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {Object.entries(groupedItems).map(([category, items]) => (
-                      <div key={category}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge 
-                            className={categoryColors[category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800'}
-                          >
-                            {category}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {items.length} {items.length === 1 ? 'item' : 'itens'}
-                          </span>
-                        </div>
-                        <div className="space-y-2 pl-4">
-                          {items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
-                              {editingItem?.id === item.id ? (
-                                <div className="flex-1 space-y-2">
-                                  <Input 
-                                    value={editingItem.title}
-                                    onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                                    className="text-sm"
-                                  />
-                                  <Select value={editingItem.category} onValueChange={(value) => setEditingItem({ ...editingItem, category: value })}>
-                                    <SelectTrigger className="text-sm">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {categories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  <DragDropContext onDragEnd={handleCategoryDragEnd}>
+                    <Droppable droppableId="categories">
+                      {(provided) => (
+                        <div 
+                          className="space-y-6"
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {categoryOrder.map((category, index) => {
+                            const items = groupedItems[category] || []
+                            return (
+                              <Draggable key={category} draggableId={category} index={index}>
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`transition-all ${
+                                      snapshot.isDragging ? 'shadow-lg bg-white rounded-lg border' : ''
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <div 
+                                        {...provided.dragHandleProps}
+                                        className="cursor-grab active:cursor-grabbing"
+                                      >
+                                        <GripVertical className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                                      </div>
+                                      <Badge 
+                                        className={categoryColors[category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800'}
+                                      >
+                                        {category}
+                                      </Badge>
+                                      <span className="text-sm text-muted-foreground">
+                                        {items.length} {items.length === 1 ? 'item' : 'itens'}
+                                      </span>
+                                    </div>
+                                    <div className="space-y-2 pl-8">
+                                      {items.map((item) => (
+                                        <div key={item.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
+                                          {editingItem?.id === item.id ? (
+                                            <div className="flex-1 space-y-2">
+                                              <Input 
+                                                value={editingItem.title}
+                                                onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                                                className="text-sm"
+                                              />
+                                              <Select value={editingItem.category} onValueChange={(value) => setEditingItem({ ...editingItem, category: value })}>
+                                                <SelectTrigger className="text-sm">
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  {categories.map(cat => (
+                                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                  ))}
+                                                </SelectContent>
+                                              </Select>
+                                              <div className="flex gap-1">
+                                                <Button size="sm" variant="outline" onClick={handleSaveItem}>
+                                                  <Save className="w-3 h-3" />
+                                                </Button>
+                                                <Button size="sm" variant="outline" onClick={() => setEditingItem(null)}>
+                                                  <X className="w-3 h-3" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <>
+                                              <CheckCircle className="w-4 h-4 text-green-500" />
+                                              <span className="text-sm flex-1">{item.title}</span>
+                                              <div className="flex gap-1">
+                                                <Button 
+                                                  size="sm" 
+                                                  variant="ghost"
+                                                  onClick={() => setEditingItem({
+                                                    id: item.id,
+                                                    title: item.title,
+                                                    description: item.description,
+                                                    category: item.category
+                                                  })}
+                                                >
+                                                  <Pencil className="w-3 h-3" />
+                                                </Button>
+                                                <Button 
+                                                  size="sm" 
+                                                  variant="ghost"
+                                                  onClick={() => handleDeleteItem(item.id)}
+                                                >
+                                                  <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
                                       ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <div className="flex gap-1">
-                                    <Button size="sm" variant="outline" onClick={handleSaveItem}>
-                                      <Save className="w-3 h-3" />
-                                    </Button>
-                                    <Button size="sm" variant="outline" onClick={() => setEditingItem(null)}>
-                                      <X className="w-3 h-3" />
-                                    </Button>
+                                    </div>
+                                    <Separator className="mt-4" />
                                   </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <CheckCircle className="w-4 h-4 text-green-500" />
-                                  <span className="text-sm flex-1">{item.title}</span>
-                                  <div className="flex gap-1">
-                                    <Button 
-                                      size="sm" 
-                                      variant="ghost"
-                                      onClick={() => setEditingItem({
-                                        id: item.id,
-                                        title: item.title,
-                                        description: item.description,
-                                        category: item.category
-                                      })}
-                                    >
-                                      <Pencil className="w-3 h-3" />
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="ghost"
-                                      onClick={() => handleDeleteItem(item.id)}
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          ))}
+                                )}
+                              </Draggable>
+                            )
+                          })}
+                          {provided.placeholder}
                         </div>
-                        <Separator className="mt-4" />
-                      </div>
-                    ))}
-                    
-                    <div className="pt-4 border-t">
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>Total de itens: {templateItems.length}</span>
-                        <span>Categorias: {Object.keys(groupedItems).length}</span>
-                      </div>
-                    </div>
-                  </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 )}
+                
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>Total de itens: {templateItems.length}</span>
+                    <span>Categorias: {Object.keys(groupedItems).length}</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ) : (
