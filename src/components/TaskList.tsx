@@ -165,14 +165,21 @@ export function TaskList({
     return { taskProject, taskClient }
   }
 
-  // Group template items by category
-  const groupedTemplateItems = templateItems.reduce((acc, item) => {
+  // Sort template items by sort_order first, then group by category
+  const sortedTemplateItems = templateItems.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+  
+  const groupedTemplateItems = sortedTemplateItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = []
     }
     acc[item.category].push(item)
     return acc
   }, {} as Record<string, ChecklistTemplateItem[]>)
+  
+  // Get categories in the order they first appear in sorted items
+  const categoryOrder = sortedTemplateItems
+    .map(item => item.category)
+    .filter((category, index, arr) => arr.indexOf(category) === index)
 
   const categoryColors = {
     'ESTRUTURA': 'bg-blue-100 text-blue-800',
@@ -234,7 +241,7 @@ export function TaskList({
               <div className="h-px bg-border flex-1" />
             </div>
 
-            {Object.entries(groupedTemplateItems).map(([category, items]) => (
+            {categoryOrder.map(category => (
               <div key={category} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Badge 
@@ -245,7 +252,7 @@ export function TaskList({
                   </Badge>
                 </div>
                 
-                {items.map((item) => (
+                {groupedTemplateItems[category].map((item) => (
                   <div
                     key={item.id}
                     className={cn(
