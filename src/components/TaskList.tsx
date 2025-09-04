@@ -1,10 +1,14 @@
-import { useState } from "react"
-import { ArrowLeft } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ArrowLeft, CheckCircle, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { TaskItem } from "./TaskItem"
 import { TaskInput } from "./TaskInput"
 import { TaskDetailsSheet } from "./TaskDetailsSheet"
+import { useChecklistTemplates, ChecklistTemplateItem } from "@/hooks/useChecklistTemplates"
 import { Task, TaskCategory, TaskTag, Project, Client } from "@/types/tasks"
+import { cn } from "@/lib/utils"
 
 interface TaskListProps {
   tasks: Task[]
@@ -35,6 +39,7 @@ interface TaskListProps {
   client?: Client | null
   projects?: Project[]
   clients?: Client[]
+  showChecklistTemplate?: boolean
 }
 
 export function TaskList({
@@ -56,10 +61,33 @@ export function TaskList({
   project,
   client,
   projects = [],
-  clients = []
+  clients = [],
+  showChecklistTemplate = false
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [checkedTemplateItems, setCheckedTemplateItems] = useState<Set<string>>(new Set())
+  
+  const { getDefaultTemplate, fetchTemplateItems } = useChecklistTemplates()
+  const [templateItems, setTemplateItems] = useState<ChecklistTemplateItem[]>([])
+
+  useEffect(() => {
+    if (showChecklistTemplate) {
+      loadTemplateItems()
+    }
+  }, [showChecklistTemplate])
+
+  const loadTemplateItems = async () => {
+    try {
+      const defaultTemplate = getDefaultTemplate()
+      if (defaultTemplate) {
+        const items = await fetchTemplateItems(defaultTemplate.id)
+        setTemplateItems(items)
+      }
+    } catch (error) {
+      console.error('Error loading template items:', error)
+    }
+  }
 
   const incompleteTasks = tasks.filter(task => !task.completed)
   const completedTasks = tasks.filter(task => task.completed)
@@ -111,6 +139,18 @@ export function TaskList({
     onAddTask(taskData)
   }
 
+  const handleToggleTemplateItem = (itemId: string) => {
+    setCheckedTemplateItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
   // Helper function to get project and client for a task  
   const getTaskContext = (task: Task) => {
     if (project && client) {
@@ -123,6 +163,23 @@ export function TaskList({
     const taskClient = taskProject ? clients.find(c => c.id === taskProject.clientId) : null
     
     return { taskProject, taskClient }
+  }
+
+  // Group template items by category
+  const groupedTemplateItems = templateItems.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = []
+    }
+    acc[item.category].push(item)
+    return acc
+  }, {} as Record<string, ChecklistTemplateItem[]>)
+
+  const categoryColors = {
+    'ESTRUTURA': 'bg-blue-100 text-blue-800',
+    'PROJETO': 'bg-green-100 text-green-800',
+    'ACABAMENTOS': 'bg-orange-100 text-orange-800',
+    'REVISÃO': 'bg-purple-100 text-purple-800',
+    'PRODUÇÃO': 'bg-red-100 text-red-800'
   }
 
   return (
@@ -165,8 +222,84 @@ export function TaskList({
       />
 
       <div className="space-y-4">
+        {/* Checklist Template Items */}
+        {showChecklistTemplate && templateItems.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pt-2 pb-2">
+              <div className="h-px bg-border flex-1" />
+              <span className="text-sm text-muted-foreground px-3">
+                <CheckCircle className="w-4 h-4 inline mr-1" />
+                Template de Checklist
+              </span>
+              <div className="h-px bg-border flex-1" />
+            </div>
+
+            {Object.entries(groupedTemplateItems).map(([category, items]) => (
+              <div key={category} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="secondary" 
+                    className={cn("text-xs font-medium", categoryColors[category as keyof typeof categoryColors] || "bg-gray-100 text-gray-800")}
+                  >
+                    {category}
+                  </Badge>
+                </div>
+                
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "group border rounded-lg transition-all duration-200",
+                      "hover:bg-muted/50 hover:shadow-sm",
+                      checkedTemplateItems.has(item.id) && "opacity-60"
+                    )}
+                  >
+                    <div className="flex items-start gap-3 p-3">
+                      <Checkbox
+                        checked={checkedTemplateItems.has(item.id)}
+                        onCheckedChange={() => handleToggleTemplateItem(item.id)}
+                        className="data-[state=checked]:bg-ms-blue data-[state=checked]:border-ms-blue mt-1"
+                      />
+                      
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div
+                            className={cn(
+                              "text-sm transition-all duration-200 flex-1",
+                              checkedTemplateItems.has(item.id) && "line-through text-muted-foreground"
+                            )}
+                          >
+                            {item.title}
+                          </div>
+                        </div>
+
+                        {item.description && (
+                          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Regular Tasks */}
         {sortedIncompleteTasks.length > 0 && (
           <div className="space-y-2">
+            {showChecklistTemplate && templateItems.length > 0 && (
+              <div className="flex items-center gap-2 pt-4 pb-2">
+                <div className="h-px bg-border flex-1" />
+                <span className="text-sm text-muted-foreground px-3">
+                  Tarefas do Projeto
+                </span>
+                <div className="h-px bg-border flex-1" />
+              </div>
+            )}
+            
             {sortedIncompleteTasks.map((task) => {
               const { taskProject, taskClient } = getTaskContext(task)
               return (
