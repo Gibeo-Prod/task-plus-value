@@ -319,6 +319,7 @@ export function TaskList({
                   onTaskClick={handleTaskClick}
                   project={taskProject}
                   client={taskClient}
+                  categories={categories}
                 />
               )
             })}
@@ -346,6 +347,7 @@ export function TaskList({
                   onTaskClick={handleTaskClick}
                   project={taskProject}
                   client={taskClient}
+                  categories={categories}
                 />
               )
             })}

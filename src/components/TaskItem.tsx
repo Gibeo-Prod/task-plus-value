@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
-import { Task, Project, Client } from "@/types/tasks"
+import { Task, Project, Client, TaskCategory } from "@/types/tasks"
 
 interface TaskItemProps {
   task: Task
@@ -16,9 +16,10 @@ interface TaskItemProps {
   onTaskClick: (task: Task) => void
   project?: Project | null
   client?: Client | null
+  categories?: TaskCategory[]
 }
 
-export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskClick, project, client }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskClick, project, client, categories = [] }: TaskItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -45,6 +46,9 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
     }
     onTaskClick(task)
   }
+
+  // Find category for the task
+  const taskCategory = task.categoryId ? categories.find(cat => cat.id === task.categoryId) : null
 
   return (
     <div
@@ -108,6 +112,19 @@ export function TaskItem({ task, onToggle, onDelete, onToggleImportant, onTaskCl
               </Button>
             </div>
           </div>
+
+          {/* Category badge */}
+          {taskCategory && (
+            <div className="flex items-center gap-2 mb-2">
+              <Badge 
+                variant="secondary" 
+                className="text-xs font-medium"
+                style={{ backgroundColor: taskCategory.color + "20", color: taskCategory.color }}
+              >
+                {taskCategory.name}
+              </Badge>
+            </div>
+          )}
 
           {/* Project and Client info */}
           {(project || client) && (
