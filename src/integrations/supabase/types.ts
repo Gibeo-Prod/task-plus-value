@@ -803,6 +803,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_invite_by_token: {
+        Args: { invite_token: string }
+        Returns: {
+          client_id: string
+          contact_type: string
+          expires_at: string
+          id: string
+          project_id: string
+          recipient_name: string
+          used_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -9,18 +9,14 @@ export const fetchInviteByToken = async (token: string) => {
   const searchPatterns = getTokenSearchPatterns(token)
   console.log('Token search patterns:', searchPatterns)
 
-  // Try exact match first - RLS now requires token-specific queries
+  // Use the secure function to get invite data - no more direct table access
   const { data: inviteArray, error: arrayError } = await supabase
-    .from('project_invites')
-    .select('*')
-    .eq('token', searchPatterns.exact)
-    .not('expires_at', 'lt', new Date().toISOString()) // Only non-expired
-    .is('used_at', null) // Only unused invites
+    .rpc('get_invite_by_token', { invite_token: searchPatterns.exact })
 
-  console.log('Exact match result:', inviteArray)
-  console.log('Exact match error:', arrayError)
+  console.log('Secure function result:', inviteArray)
+  console.log('Secure function error:', arrayError)
 
-  // If exact match found, return it
+  // If exact match found, return it in the expected format
   if (inviteArray && inviteArray.length > 0) {
     return { inviteArray, arrayError }
   }
@@ -29,11 +25,7 @@ export const fetchInviteByToken = async (token: string) => {
   if (!searchPatterns.isUUID) {
     console.log('Trying case-insensitive search for short token')
     const { data: ilikeArray, error: ilikeError } = await supabase
-      .from('project_invites')
-      .select('*')
-      .ilike('token', token)
-      .not('expires_at', 'lt', new Date().toISOString()) // Only non-expired
-      .is('used_at', null) // Only unused invites
+      .rpc('get_invite_by_token', { invite_token: token })
 
     console.log('Case-insensitive result:', ilikeArray)
     
