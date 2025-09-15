@@ -72,10 +72,8 @@ export function TaskList({
   const [templateItems, setTemplateItems] = useState<ChecklistTemplateItem[]>([])
 
   useEffect(() => {
-    if (showChecklistTemplate) {
-      loadTemplateItems()
-    }
-  }, [showChecklistTemplate])
+    loadTemplateItems()
+  }, [])
 
   const loadTemplateItems = async () => {
     try {
@@ -294,18 +292,81 @@ export function TaskList({
           </div>
         )}
 
+        {/* Default Checklist Template */}
+        {templateItems.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pt-2 pb-2">
+              <div className="h-px bg-border flex-1" />
+              <span className="text-sm text-muted-foreground px-3">
+                <CheckCircle className="w-4 h-4 inline mr-1" />
+                Checklist Padrão
+              </span>
+              <div className="h-px bg-border flex-1" />
+            </div>
+
+            {categoryOrder.map(category => (
+              <div key={category} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="secondary" 
+                    className={cn("text-xs font-medium", categoryColors[category as keyof typeof categoryColors] || "bg-gray-100 text-gray-800")}
+                  >
+                    {category}
+                  </Badge>
+                </div>
+                
+                {groupedTemplateItems[category].map((item) => (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "group border rounded-lg transition-all duration-200",
+                      "hover:bg-muted/50 hover:shadow-sm",
+                      checkedTemplateItems.has(item.id) && "opacity-60"
+                    )}
+                  >
+                    <div className="flex items-start gap-3 p-3">
+                      <Checkbox
+                        checked={checkedTemplateItems.has(item.id)}
+                        onCheckedChange={() => handleToggleTemplateItem(item.id)}
+                        className="data-[state=checked]:bg-ms-blue data-[state=checked]:border-ms-blue mt-1"
+                      />
+                      
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div
+                            className={cn(
+                              "text-sm transition-all duration-200 flex-1",
+                              checkedTemplateItems.has(item.id) && "line-through text-muted-foreground"
+                            )}
+                          >
+                            {item.title}
+                          </div>
+                        </div>
+
+                        {item.description && (
+                          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Regular Tasks */}
         {sortedIncompleteTasks.length > 0 && (
           <div className="space-y-4">
-            {showChecklistTemplate && templateItems.length > 0 && (
-              <div className="flex items-center gap-2 pt-4 pb-2">
-                <div className="h-px bg-border flex-1" />
-                <span className="text-sm text-muted-foreground px-3">
-                  Tarefas do Projeto
-                </span>
-                <div className="h-px bg-border flex-1" />
-              </div>
-            )}
+            <div className="flex items-center gap-2 pt-4 pb-2">
+              <div className="h-px bg-border flex-1" />
+              <span className="text-sm text-muted-foreground px-3">
+                Tarefas do Projeto
+              </span>
+              <div className="h-px bg-border flex-1" />
+            </div>
             
             {sortedIncompleteTasks.map((task) => {
               const { taskProject, taskClient } = getTaskContext(task)
