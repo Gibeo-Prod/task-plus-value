@@ -296,7 +296,7 @@ export function TaskList({
 
         {/* Regular Tasks */}
         {sortedIncompleteTasks.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {showChecklistTemplate && templateItems.length > 0 && (
               <div className="flex items-center gap-2 pt-4 pb-2">
                 <div className="h-px bg-border flex-1" />
@@ -310,17 +310,70 @@ export function TaskList({
             {sortedIncompleteTasks.map((task) => {
               const { taskProject, taskClient } = getTaskContext(task)
               return (
-                <TaskItem
+                <div
                   key={task.id}
-                  task={task}
-                  onToggle={onToggleTask}
-                  onDelete={onDeleteTask}
-                  onToggleImportant={onToggleImportant}
-                  onTaskClick={handleTaskClick}
-                  project={taskProject}
-                  client={taskClient}
-                  categories={categories}
-                />
+                  className="group border rounded-lg transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
+                >
+                  <div className="flex items-start gap-3 p-3">
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => onToggleTask(task.id)}
+                      className="data-[state=checked]:bg-ms-blue data-[state=checked]:border-ms-blue mt-1"
+                    />
+                    
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div
+                          className={cn(
+                            "text-sm transition-all duration-200 flex-1 cursor-pointer",
+                            task.completed && "line-through text-muted-foreground"
+                          )}
+                          onClick={() => handleTaskClick(task)}
+                        >
+                          {task.title}
+                        </div>
+                      </div>
+
+                      {task.description && (
+                        <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                          {task.description}
+                        </div>
+                      )}
+                      
+                      {(task.priority || task.dueDate || task.tags?.length) && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {task.priority && task.priority !== 'medium' && (
+                            <Badge variant="outline" className={cn(
+                              "text-xs",
+                              task.priority === 'high' && "border-red-200 text-red-700",
+                              task.priority === 'low' && "border-blue-200 text-blue-700"
+                            )}>
+                              {task.priority === 'high' ? 'Alta' : 'Baixa'}
+                            </Badge>
+                          )}
+                          
+                          {task.dueDate && (
+                            <Badge variant="outline" className="text-xs border-orange-200 text-orange-700">
+                              {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                            </Badge>
+                          )}
+                          
+                          {task.tags?.map((tag) => (
+                            <Badge 
+                              key={tag.id} 
+                              variant="outline" 
+                              className="text-xs"
+                              style={{ borderColor: tag.color, color: tag.color }}
+                            >
+                              <Tag className="w-3 h-3 mr-1" />
+                              {tag.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )
             })}
           </div>
